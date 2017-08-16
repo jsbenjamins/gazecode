@@ -14,7 +14,7 @@ the data itself.
 
 2) Put the exported video and data in the data folder of GazeCode
 
-3) Find a set of nince 100 x 100 non-transparant PNGs reflecting the
+3) Find a set of nine 100 x 100 non-transparant PNGs reflecting the
 different categories you want to use (thenounproject.com is good place to
 start). Upload white empty PNGs if you have less than 9 categories. Put
 these files in the categories folder of GazeCode.
