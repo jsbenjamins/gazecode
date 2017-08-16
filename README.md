@@ -10,7 +10,8 @@ categorise the detected fixations.
 
 How to use:
 1) Export both a visualisation video of raw mobile eye-tracking data and
-the data itself. (demo data is available at tinyurl.com/gazecodedemodata)
+the data itself. 
+(demo data is available at http://tinyurl.com/gazecodedemodata)
 
 2) Put the exported video and data in the data folder of GazeCode
 
