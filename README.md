@@ -22,7 +22,7 @@ these files in the categories folder of GazeCode.
 4) Go to the code folder of GazeCode and in the Matlab command window
 type 'gazecode' to start GazeCode.
 
-5) Point GazeCode to the category set, files and folders requested when
+5) Point GazeCode to the category set, files and folders it requests when
 prompted.
 
 6) Browse through the detected fixations using the arrow buttons (or Z
