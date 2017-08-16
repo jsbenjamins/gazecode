@@ -44,7 +44,7 @@ Movement Research.
 
 For more information, questions, or to check whether we have updated to a
 better version, e-mail: j.s.benjamins@uu.nl 
-GazeCode is available from ww.github.com/jsbenjamins/gazecode
+GazeCode is available from www.github.com/jsbenjamins/gazecode
 
 Most parts of the GazeCode are licensed under the Creative Commons
 Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT
