@@ -1,2 +1,2 @@
-demo data folders should be placed here
-get them at:
+data folders should be placed here
+get demo data at: https://tinyurl.com/gazecodedemodata
