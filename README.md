@@ -4,7 +4,7 @@ This software allows for fast and flexible manual classification of any
 mobile eye-tracking data. Currently Pupil Labs and Tobii Pro Glasses data 
 are supported. The software loads an exported visualisation (video file) 
 and the data of a mobile eye-tracking measurement, runs a fixation
-detection algorithm (Hooge and  Camps, 2013, Froniters in Psychology, 4,
+detection algorithm (Hooge and  Camps, 2013, Frontiers in Psychology, 4,
 996) and offers a simple to use interface to browse through and
 categorise the detected fixations.
 
@@ -16,14 +16,14 @@ the data itself.
 
 3) Find a set of nine 100 x 100 non-transparant PNGs reflecting the
 different categories you want to use (thenounproject.com is good place to
-start). Upload white empty PNGs if you have less than 9 categories. Put
+start). Use white empty PNGs if you have less than 9 categories. Put
 these files in the categories folder of GazeCode.
 
-4) Go to the code folder of GazeCode and in the Matlab command window
-type 'gazecode' to start GazeCode.
+4) Go to the code folder of GazeCode and type gazecode in the Matlab 
+command window to start GazeCode.
 
-5) Point GazeCode to the category set, files and folders it requests when
-prompted.
+5) When prompted, point GazeCode to the category set, files and folders it
+requests.
 
 6) Browse through the detected fixations using the arrow buttons (or Z
 and X keys on the keyboard) in the left panel of GazeCode.
