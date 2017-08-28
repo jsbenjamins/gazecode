@@ -38,7 +38,7 @@ keyboard numpad).
 option in the menu of GazeCode.
 
 This open-source toolbox has been developed by J.S. Benjamins, R.S.
-Hessels and I.T.C. Hooge. Please cite as:
+Hessels and I.T.C. Hooge. When you use it, please cite:
 J.S. Benjamins, R.S. Hessels, I.T.C. Hooge (2017). GazeCode: an
 open-source toolbox for mobile eye-tracking data analysis. Journal of Eye
 Movement Research.
