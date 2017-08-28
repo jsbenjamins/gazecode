@@ -273,6 +273,7 @@ gridpos     = [...
 gv.knoppen = [];
 
 for p = 1:size(gridpos,1)
+%     gv.knoppen(p) = uicontrol(rp,'Style','pushbutton','HorizontalAlignment','left','string','','callback',@labelfix,'userdata',gv);
     gv.knoppen(p) = uicontrol(rp,'Style','pushbutton','HorizontalAlignment','left','string','','callback',@labelfix,'userdata',gv);
     set(gv.knoppen(p),'position',gridpos(p,:));
     set(gv.knoppen(p),'backgroundcolor',[1 1 1]);
@@ -355,7 +356,7 @@ set(hm,'userdata',gv);
 %% fixation detection using data
 % read data and determine fixations, here cases can be added for other 
 % mobile eye trackers, as well as changing the fixation detection algorithm 
-% by altering the function that now runs on line 386.
+% by altering the function that now runs on line 420.
 if ~skipdataload
     % to be done still, select data file from results directory if you
     % want to skip data loading
@@ -485,16 +486,23 @@ end
 % function to attribute a category code to the fixation, this is a function 
 % of the buttons in the right panel
 function labelfix(src,evt)
-% if zero is pressed a code is reset
-if ~strcmp(evt.Character,'0');
+if isempty(evt)
     categorie = get(src,'userdata');
     rp = get(src,'parent');
     hm = get(rp,'parent');
     gv = get(hm,'userdata');
 else
-    hm = src;
-    categorie = 0;
-    gv = get(hm,'userdata');
+    % if zero is pressed a code is reset
+    if ~strcmp(evt.Character,'0') || isempty(evt)
+        categorie = get(src,'userdata');
+        rp = get(src,'parent');
+        hm = get(rp,'parent');
+        gv = get(hm,'userdata');
+    else
+        hm = src;
+        categorie = 0;
+        gv = get(hm,'userdata');
+    end
 end
 data = gv.data;
 data(gv.curfix,end) = categorie;
@@ -574,7 +582,6 @@ end
 function verwerkknop(src,evt)
 gv = get(src,'userdata');
 tsrc = get(src,'Children');
-evt.Key;
 switch evt.Key
     case gv.fwdbut
         % get the right button starting at the figure handle hm
@@ -777,7 +784,11 @@ switch evt.Key
         end
         labelfix(src,evt);
     case gv.cat0but
-        labelfix(src,evt);   
+        % pushing command buttons also codes as 0, so check whether
+        % evt.Modifier is empty to discern a command key with key zero
+        if isempty(evt.Modifier)
+            labelfix(src,evt);   
+        end
     otherwise
         disp('Unknown key pressed');
 end
