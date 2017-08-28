@@ -52,4 +52,3 @@ Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT
 license, and some may be under other licenses.
 
 Tested on Matlab 2014a.
->>>>>>> 1e07dfcee3a07ea95c7ec5d89ee08c842de99a9c
