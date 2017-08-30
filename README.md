@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 GazeCode (alpha version)
+=======
+GazeCode
+>>>>>>> c2739e3ffa164a070fe57a697ebd3c25d848c820
 
 This software allows for fast and flexible manual classification of any
 mobile eye-tracking data. Currently Pupil Labs and Tobii Pro Glasses data 
@@ -55,4 +59,7 @@ Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT
 license, and some may be under other licenses.
 
 Tested on Matlab 2014a.
+<<<<<<< HEAD
 
+=======
+>>>>>>> c2739e3ffa164a070fe57a697ebd3c25d848c820
