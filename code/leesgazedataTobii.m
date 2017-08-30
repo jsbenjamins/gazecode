@@ -6,7 +6,7 @@ if fid == -1
     error(message);
 end
 
-skip = 1;                           % om header over te slaan
+skip = 1;                           % to skip header
 for p=1:skip,
     fgetl(fid);
 end

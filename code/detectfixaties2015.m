@@ -1,45 +1,45 @@
 function [fmark] = detectfixaties2015(mvel,f,time)
 
-% opschoonactie
-% 16 oktober 2011 IH
+% cleaned up on
+% 16 october 2011 IH
 
 thr             = f.thr;
 counter         = f.counter;
 minfix          = f.minfix;                        % minfix in ms
 
-qvel            = mvel < thr;                      % kijk waar de snelheid kleiner is dan thr
+qvel            = mvel < thr;                      % look for velocity below threshold
 qnotnan         = ~isnan(mvel);
 qall            = qnotnan & qvel;
-meanvel         = mean(mvel(qall));                % bepaal mean van de velocity tijdens de fixaties
-stdvel          = std(mvel(qall));                 % bepaal de std van de velocity tijdens de fixaties
+meanvel         = mean(mvel(qall));                % determine the velocity mean during fixations
+stdvel          = std(mvel(qall));                 % determine the velocity std during fixations
 
 counter         = 0;
 oldthr          = 0;
 while 1,
     thr2        = meanvel + f.lambda*stdvel;
-    qvel        = mvel < thr2;                     % kijk waar de snelheid kleiner is dan thr
+    qvel        = mvel < thr2;                     % look for velocity below threshold
     
-    if round(thr2) == round(oldthr) | counter == f.counter, % f.counter voor maximaal aantal iteraties
+    if round(thr2) == round(oldthr) | counter == f.counter, % f.counter for maximum number of iterations
         break;
     end
     meanvel     = mean(mvel(qvel));
-    stdvel      = std(mvel(qvel));                 % bepaal de std van de velocity tijdens de fixaties    
+    stdvel      = std(mvel(qvel));                 % determine the velocity std during fixations    
     oldthr      = thr2;
     counter     = counter + 1;
 end
 
-thr2            = meanvel + 3*stdvel;              % bepaal nieuwe drempel gebaseerd opde ruis in de data
-qvel            = mvel < thr2;                     % kijk waar de snelheid kleiner is dan thr
-[on,off]        = detectswitches(qvel');           % bepaal fixaties
+thr2            = meanvel + 3*stdvel;              % determine new threshold based on data noise
+qvel            = mvel < thr2;                     % look for velocity below threshold
+[on,off]        = detectswitches(qvel');           % determine fixations
 
-on              = time(on);                        % converteer naar tijd
-off             = time(off);                       % converteer naar tijd
+on              = time(on);                        % convcert to time
+off             = time(off);                       % convert to time
 
-qfix            = off - on > minfix;               % kijk waar de kleine fixaties zitten       
-on              = on(qfix);                        % gooi de fixaties kleiner dan minfix eruit
-off             = off(qfix);                       % gooi de fixaties kleiner dan minfix eruit
+qfix            = off - on > minfix;               % look for small fixations       
+on              = on(qfix);                        % delete fixations smaller than minfix
+off             = off(qfix);                       % delete fixations smaller than minfix
 
 on(2:end)       = on(2:end);                       % 
 off(1:end-1)    = off(1:end-1);                    % 
 
-fmark           = sort([on;off]);                  % gooi de markers op volgorde achter elkaar
+fmark           = sort([on;off]);                  % sort the markers

@@ -1,6 +1,6 @@
 function gazecode()
 
-% GazeCode
+% GazeCode (alpha version)
 % 
 % This software allows for fast and flexible manual classification of any
 % mobile eye-tracking data. Currently Pupil Labs and Tobii Pro Glasses data 
@@ -11,36 +11,39 @@ function gazecode()
 % categorise the detected fixations.
 % 
 % How to use:
-% 1) Export both a visualisation video of raw mobile eye-tracking data and
+% 1) Place the GazeCode files in a directory to which you can navigate easily
+% in Matlab
+% 
+% 2) Export both a visualisation video of raw mobile eye-tracking data and
 % the data itself. 
 % (demo data is available at http://tinyurl.com/gazecodedemodata)
 % 
-% 2) Put the exported video and data in the data folder of GazeCode
+% 3) Put the video file and the data file in the data folder of GazeCode
 % 
-% 3) Find a set of nine 100 x 100 non-transparant PNGs reflecting the
+% 4) Find a set of nine 100 x 100 non-transparant PNGs reflecting the
 % different categories you want to use (thenounproject.com is good place to
 % start). Use white empty PNGs if you have less than 9 categories. Put
 % these files in the categories folder of GazeCode.
 % 
-% 4) Go to the code folder of GazeCode and type gazecode in the Matlab 
-% command window to start GazeCode.
+% 5) In Matlab set the working directory to the code folder of GazeCode and 
+% type gazecode in the Matlab command window to start GazeCode.
 % 
-% 5) When prompted, point GazeCode to the category set, files and folders it
+% 6) When prompted, point GazeCode to the category set, files and folders it
 % requests.
 % 
-% 6) Browse through the detected fixations using the arrow buttons (or Z
+% 7) Browse through the detected fixations using the arrow buttons (or Z
 % and X keys on the keyboard) in the left panel of GazeCode.
 % 
-% 7) Assign a category to a fixation by using the category buttons in the
+% 8) Assign a category to a fixation by using the category buttons in the
 % right panel of GazeCode or use (numpad) keyboard keys 1-9. Category
 % buttons are numbered left-to-right, bottom-to-top (analogue to the
 % keyboard numpad).
 % 
-% 8) Category codes of fixations can be exported to a file using the Save
+% 9) Category codes of fixations can be exported to a file using the Save
 % option in the menu of GazeCode.
 % 
 % This open-source toolbox has been developed by J.S. Benjamins, R.S.
-% Hessels and I.T.C. Hooge. Please cite as:
+% Hessels and I.T.C. Hooge. When you use it, please cite:
 % J.S. Benjamins, R.S. Hessels, I.T.C. Hooge (2017). GazeCode: an
 % open-source toolbox for mobile eye-tracking data analysis. Journal of Eye
 % Movement Research.
@@ -49,7 +52,7 @@ function gazecode()
 % better version, e-mail: j.s.benjamins@uu.nl 
 % GazeCode is available from www.github.com/jsbenjamins/gazecode
 % 
-% Most parts of the GazeCode are licensed under the Creative Commons
+% Most parts of  GazeCode are licensed under the Creative Commons
 % Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT
 % license, and some may be under other licenses.
 % 
@@ -74,7 +77,7 @@ gv.curfix       = 1;
 gv.maxfix       = 1;
 skipdataload    = false;
 
-% knoppen
+% buttons
 gv.fwdbut  = 'x'; % move forward (next fixation)
 gv.bckbut  = 'z'; % move backward (previous fixation)
 gv.cat1but = {'1','numpad1'};
@@ -88,7 +91,7 @@ gv.cat8but = {'8','numpad8'};
 gv.cat9but = {'9','numpad9'};
 gv.cat0but = {'0','numpad0'};
 
-%% directories en settings
+%% directories and settings
 gv.foldnaam     = 0;
 gv.catfoldnaam  = 0;
 gv.fs           = filesep;
@@ -109,7 +112,7 @@ cd(gv.catdir);
 
 cd ..;
 
-gv.appdir       = [cd gv.fs 'application'];
+gv.appdir       = [cd gv.fs 'images'];
 cd(gv.appdir);
 
 cd ..;
@@ -131,9 +134,9 @@ if strcmp(gv.datatype,'Tobii Pro Glasses')
     help dispTobiiInstructions;
     dispTobiiInstructions;
     clc;
-    TobiiOK = questdlg(['Do you have a video export from Tobii in MP4 format and a data file in TXT format?'],'Do you have the right Tobii files?','Yes, continue','No & quit','Yes, continue');
+    TobiiOK = questdlg(['Did you place the video file and the data file from Tobii in the data folder of GazeCode?'],'Are the Tobii files in the right location?','Yes, continue','No & quit','Yes, continue');
     if strcmp(TobiiOK,'No & quit')
-        disp('GazeCode quit, since you indicated not having the correct Tobii files.')
+        disp('GazeCode quit, since you indicated not having put the Tobii files in the right location.')
         return
     end
 end
@@ -356,7 +359,7 @@ set(hm,'userdata',gv);
 %% fixation detection using data
 % read data and determine fixations, here cases can be added for other 
 % mobile eye trackers, as well as changing the fixation detection algorithm 
-% by altering the function that now runs on line 420.
+% by altering the function that now runs on line 423.
 if ~skipdataload
     % to be done still, select data file from results directory if you
     % want to skip data loading
@@ -368,7 +371,7 @@ if ~skipdataload
             tempfold = folderfromfolder([gv.foldnaam gv.fs 'exports']);
             % if there are more than one exports, it just takes the first!
             tempfold = tempfold(1).name;
-            % note the typo! Pupila Labs currently exports postions not
+            % note the typo! Pupils Labs currently exports postions not
             % positions!
             filenaam = [gv.foldnaam gv.fs 'exports' gv.fs tempfold gv.fs 'gaze_postions.csv'];
             
