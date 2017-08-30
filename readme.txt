@@ -9,7 +9,7 @@ detection algorithm (Hooge and  Camps, 2013, Frontiers in Psychology, 4,
 categorise the detected fixations.
 
 How to use:
-1) Place the GazeCode files in a directory to which you can easily navigate 
+1) Place the GazeCode files in a directory to which you can easily navigate
 in Matlab
 
 2) Export both a visualisation video of raw mobile eye-tracking data and
@@ -54,5 +54,6 @@ Most parts of  GazeCode are licensed under the Creative Commons
 Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT
 license, and some may be under other licenses.
 
-Tested on Matlab 2014a.
-
+Tested on
+Matlab 2014a on Mac OSX 10.10.5
+Matlab 2013a on Windows 7 Enterprise, Service Pack 1

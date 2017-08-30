@@ -54,4 +54,6 @@ Most parts of  GazeCode are licensed under the Creative Commons
 Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT
 license, and some may be under other licenses.
 
-Tested on Matlab 2014a.
+Tested on
+Matlab 2014a on Mac OSX 10.10.5
+Matlab 2013a on Windows 7 Enterprise, Service Pack 1
