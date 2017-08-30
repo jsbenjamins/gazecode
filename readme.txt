@@ -9,7 +9,7 @@ detection algorithm (Hooge and  Camps, 2013, Frontiers in Psychology, 4,
 categorise the detected fixations.
 
 How to use:
-1) Place the GazeCode files in a directory to which you can navigate easily
+1) Place the GazeCode files in a directory to which you can easily navigate 
 in Matlab
 
 2) Export both a visualisation video of raw mobile eye-tracking data and
