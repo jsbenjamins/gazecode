@@ -587,208 +587,31 @@ end
 function verwerkknop(src,evt)
 gv = get(src,'userdata');
 tsrc = get(src,'Children');
+% Simplified as per suggestion of D.C. Niehorster on 2018-03-29
 switch evt.Key
-    case gv.fwdbut
-        % get the right button starting at the figure handle hm
-        for p = 1:length(tsrc)
-            temp = get(tsrc(p));
-            if isfield(temp,'Title')
-                if strcmp(temp.Title,'Fix Playback/Lookup')
-                    kids = temp.Children;
-                    for q = 1:length(kids)
-                        kid = get(kids(q));
-                        if isfield(kid,'UserData')
-                            if strcmp(kid.UserData,gv.fwdbut)
-                                src = kids(q);
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        playforward(src,evt);
-    case gv.bckbut
-        for p = 1:length(tsrc)
-            temp = get(tsrc(p));
-            if isfield(temp,'Title')
-                if strcmp(temp.Title,'Fix Playback/Lookup')
-                    kids = temp.Children;
-                    for q = 1:length(kids)
-                        kid = get(kids(q));
-                        if isfield(kid,'UserData')
-                            if strcmp(kid.UserData,gv.bckbut)
-                                src = kids(q);
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        playback(src,evt);
-    case gv.cat1but
-        for p = 1:length(tsrc)
-            temp = get(tsrc(p));
-            if isfield(temp,'Title')
-                if strcmp(temp.Title,'Categories')
-                    kids = temp.Children;
-                    for q = 1:length(kids)
-                        kid = get(kids(q));
-                        if isfield(kid,'UserData')
-                            if kid.UserData == 1
-                                src = kids(q);
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        labelfix(src,evt);
-    case gv.cat2but
-        for p = 1:length(tsrc)
-            temp = get(tsrc(p));
-            if isfield(temp,'Title')
-                if strcmp(temp.Title,'Categories')
-                    kids = temp.Children;
-                    for q = 1:length(kids)
-                        kid = get(kids(q));
-                        if isfield(kid,'UserData')
-                            if kid.UserData == 2
-                                src = kids(q);
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        labelfix(src,evt);
-    case gv.cat3but
-        for p = 1:length(tsrc)
-            temp = get(tsrc(p));
-            if isfield(temp,'Title')
-                if strcmp(temp.Title,'Categories')
-                    kids = temp.Children;
-                    for q = 1:length(kids)
-                        kid = get(kids(q));
-                        if isfield(kid,'UserData')
-                            if kid.UserData == 3
-                                src = kids(q);
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        labelfix(src,evt);
-    case gv.cat4but
-        for p = 1:length(tsrc)
-            temp = get(tsrc(p));
-            if isfield(temp,'Title')
-                if strcmp(temp.Title,'Categories')
-                    kids = temp.Children;
-                    for q = 1:length(kids)
-                        kid = get(kids(q));
-                        if isfield(kid,'UserData')
-                            if kid.UserData == 4
-                                src = kids(q);
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        labelfix(src,evt);
-    case gv.cat5but
-        for p = 1:length(tsrc)
-            temp = get(tsrc(p));
-            if isfield(temp,'Title')
-                if strcmp(temp.Title,'Categories')
-                    kids = temp.Children;
-                    for q = 1:length(kids)
-                        kid = get(kids(q));
-                        if isfield(kid,'UserData')
-                            if kid.UserData == 5
-                                src = kids(q);
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        labelfix(src,evt);
-    case gv.cat6but
-        for p = 1:length(tsrc)
-            temp = get(tsrc(p));
-            if isfield(temp,'Title')
-                if strcmp(temp.Title,'Categories')
-                    kids = temp.Children;
-                    for q = 1:length(kids)
-                        kid = get(kids(q));
-                        if isfield(kid,'UserData')
-                            if kid.UserData == 6
-                                src = kids(q);
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        labelfix(src,evt);
-    case gv.cat7but
-        for p = 1:length(tsrc)
-            temp = get(tsrc(p));
-            if isfield(temp,'Title')
-                if strcmp(temp.Title,'Categories')
-                    kids = temp.Children;
-                    for q = 1:length(kids)
-                        kid = get(kids(q));
-                        if isfield(kid,'UserData')
-                            if kid.UserData == 7
-                                src = kids(q);
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        labelfix(src,evt);
-    case gv.cat8but
-        for p = 1:length(tsrc)
-            temp = get(tsrc(p));
-            if isfield(temp,'Title')
-                if strcmp(temp.Title,'Categories')
-                    kids = temp.Children;
-                    for q = 1:length(kids)
-                        kid = get(kids(q));
-                        if isfield(kid,'UserData')
-                            if kid.UserData == 8
-                                src = kids(q);
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        labelfix(src,evt);
-    case gv.cat9but
-        for p = 1:length(tsrc)
-            temp = get(tsrc(p));
-            if isfield(temp,'Title')
-                if strcmp(temp.Title,'Categories')
-                    kids = temp.Children;
-                    for q = 1:length(kids)
-                        kid = get(kids(q));
-                        if isfield(kid,'UserData')
-                            if kid.UserData == 9
-                                src = kids(q);
-                                evt;
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        labelfix(src,evt);
-    case gv.cat0but
+     case gv.fwdbut
+        playforward(findobj('UserData',gv.fwdbut),evt);
+     case gv.bckbut
+        playback(findobj('UserData',gv.bckbut),evt);
+     case gv.cat1but
+        labelfix(findobj('UserData',1),evt);
+     case gv.cat2but
+        labelfix(findobj('UserData',2),evt);
+     case gv.cat3but
+        labelfix(findobj('UserData',3),evt);
+     case gv.cat4but
+        labelfix(findobj('UserData',4),evt);
+     case gv.cat5but
+        labelfix(findobj('UserData',5),evt);
+     case gv.cat6but
+        labelfix(findobj('UserData',6),evt);
+     case gv.cat7but
+        labelfix(findobj('UserData',7),evt);
+     case gv.cat8but
+        labelfix(findobj('UserData',8),evt);
+     case gv.cat9but
+        labelfix(findobj('UserData',9),evt);
+     case gv.cat0but
         % pushing command buttons also codes as 0, so check whether
         % evt.Modifier is empty to discern a command key with key zero
         if isempty(evt.Modifier)
