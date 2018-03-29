@@ -285,6 +285,7 @@ for p = 1:size(gridpos,1)
     set(gv.knoppen(p),'userdata',p);
     imgData = imread([gv.catfoldnaam gv.fs num2str(p) '.png']);
     imgData = imgData./maxall(imgData);
+    imgData = double(imgData);
     set(gv.knoppen(p),'CData',imgData);
 end
 set(hm,'userdata',gv);
