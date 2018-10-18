@@ -589,7 +589,6 @@ gv = get(src,'userdata');
 tsrc = get(src,'Children');
 % Simplified as per suggestion of D.C. Niehorster on 2018-03-29
 switch evt.Key
-<<<<<<< HEAD
      case gv.fwdbut
         playforward(findobj('UserData',gv.fwdbut),evt);
      case gv.bckbut
@@ -613,31 +612,6 @@ switch evt.Key
      case gv.cat9but
         labelfix(findobj('UserData',9),evt);
      case gv.cat0but
-=======
-    case gv.fwdbut
-        playforward(findobj('UserData',gv.fwdbut),evt);
-    case gv.bckbut
-        playback(findobj('UserData',gv.bckbut),evt);
-    case gv.cat1but
-        labelfix(findobj('UserData',1),evt);
-    case gv.cat2but
-        labelfix(findobj('UserData',2),evt);
-    case gv.cat3but
-        labelfix(findobj('UserData',3),evt);
-    case gv.cat4but
-        labelfix(findobj('UserData',4),evt);
-    case gv.cat5but
-        labelfix(findobj('UserData',5),evt);
-    case gv.cat6but
-        labelfix(findobj('UserData',6),evt);
-    case gv.cat7but
-        labelfix(findobj('UserData',7),evt);
-    case gv.cat8but
-        labelfix(findobj('UserData',8),evt);
-    case gv.cat9but
-        labelfix(findobj('UserData',9),evt);
-    case gv.cat0but
->>>>>>> 9455f8a96563b60eb9acfe35a694efb8f0c1fcad
         % pushing command buttons also codes as 0, so check whether
         % evt.Modifier is empty to discern a command key with key zero
         if isempty(evt.Modifier)
