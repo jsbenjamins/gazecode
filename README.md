@@ -42,9 +42,8 @@ option in the menu of GazeCode.
 
 This open-source toolbox has been developed by J.S. Benjamins, R.S.
 Hessels and I.T.C. Hooge. When you use it, please cite:
-J.S. Benjamins, R.S. Hessels, I.T.C. Hooge (2017). GazeCode: an
-open-source toolbox for mobile eye-tracking data analysis. Journal of Eye
-Movement Research.
+
+Jeroen S. Benjamins, Roy S. Hessels, and Ignace T. C. Hooge. 2018. Gazecode: open-source software for manual mapping of mobile eye-tracking data. In Proceedings of the 2018 ACM Symposium on Eye Tracking Research & Applications (ETRA '18). ACM, New York, NY, USA, Article 54, 4 pages. DOI: https://doi.org/10.1145/3204493.3204568
 
 For more information, questions, or to check whether we have updated to a
 better version, e-mail: j.s.benjamins@uu.nl 
@@ -57,3 +56,4 @@ license, and some may be under other licenses.
 Tested on
 - Matlab 2014a on Mac OSX 10.10.5
 - Matlab 2013a on Windows 7 Enterprise, Service Pack 1
+- Matlab 2016a on Windows 10
