@@ -190,7 +190,8 @@ set(hm,'Name','GazeCode','NumberTitle','off');
 hmmar       = [150 100];
 
 set(hm, 'Units', 'pixels');
-ws          = get(0,'ScreenSize');
+ws          = truescreensize();
+ws          = [1 1 ws ];
 
 % set figure full screen, position is bottom left width height!;
 set(hm,'Position',[ws(1) + hmmar(1), ws(2) + hmmar(2), ws(3)-2*hmmar(1), ws(4)-2*hmmar(2)]);
