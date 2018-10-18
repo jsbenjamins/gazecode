@@ -221,6 +221,7 @@ sm1         = uimenu(mm1,'Label','About GazeCode','CallBack','uiwait(msgbox(''Th
 %% left panel (Child 2 of hm), don't change this section if you're not sure what you are doing 
 lp          = uipanel(hm,'Title','Fix Playback/Lookup','Units','pixels','FontSize',16,'BackgroundColor',[0.8 0.8 0.8]);
 lpmar       = [50 20];
+gv.lp       = lp;
 
 set(lp,'Position',[1+lpmar(1) 1+lpmar(2) (hmxmax/2)-2*lpmar(1) hmymax-2*lpmar(2)]);
 lpsize = get(lp,'Position');
@@ -521,13 +522,14 @@ end
 function showmainfr(hm,gv)
 plaat = read(gv.vidObj,gv.mfr(gv.curfix));
 imagesc(plaat);
-gv.frameas = gca;
+frameas = gca;
 axis off;
 axis equal;
 % clc;
 disp(['Current fixation: ', num2str(gv.curfix),'/',num2str(gv.maxfix)]);
 
-hold(gv.frameas,'off');
+set(gv.lp,'Title',['Current fixation: ' num2str(gv.curfix),'/',num2str(gv.maxfix) ]);
+hold(frameas,'off');
 setlabel(gv);
 
 if isempty(gv.data(:,end)==0)
@@ -649,7 +651,8 @@ knopsluit = questdlg('You''re about to close the program. Are you sure you''re d
 if strcmp('Yes',knopsluit);
     %     commandwindow;
     disp('Closing...');
-    save([gv.resdir gv.fs gv.filmnaam gv.fs gv.filmnaam '.mat']);
+    gv = rmfield(gv,'lp');
+    save([gv.resdir gv.fs gv.filmnaam gv.fs gv.filmnaam '.mat'],'gv');
     disp('Saving...')
     set(src,'closerequestfcn','closereq');
     close(src);
