@@ -408,8 +408,8 @@ if ~skipdataload
             
             [gv.datt, gv.datx, gv.daty] = leesgazedataTobii([filepad gv.fs filenaam]);
             
-            gv.datx = gv.datx * gv.wcr(1) - gv.wcr(1)/2;
-            gv.daty = gv.daty * gv.wcr(2) - gv.wcr(2)/2;
+            %gv.datx = gv.datx * gv.wcr(1) - gv.wcr(1)/2;
+            %gv.daty = gv.daty * gv.wcr(2) - gv.wcr(2)/2;
             
         otherwise
             disp('Unknown data type, crashing in 3,2,1,...');
