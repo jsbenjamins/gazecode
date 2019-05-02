@@ -1,6 +1,6 @@
-function gazecode()
+function gazecode(settings)
 
-% GazeCode (alpha version)
+% GazeCode (beta version)
 % 
 % This software allows for fast and flexible manual classification of any
 % mobile eye-tracking data. Currently Pupil Labs and Tobii Pro Glasses data 
@@ -15,7 +15,8 @@ function gazecode()
 % in Matlab
 % 
 % 2) Export both a visualisation video of raw mobile eye-tracking data and
-% the data itself. 
+% the data itself. For Tobii Pro Lab recordings  this is nog longer necessary, 
+% the content of the SD card can simply be used!
 % (demo data is available at http://tinyurl.com/gazecodedemodata)
 % 
 % 3) Put the video file and the data file in the data folder of GazeCode
@@ -37,30 +38,48 @@ function gazecode()
 % 8) Assign a category to a fixation by using the category buttons in the
 % right panel of GazeCode or use (numpad) keyboard keys 1-9. Category
 % buttons are numbered left-to-right, bottom-to-top (analogue to the
-% keyboard numpad).
+% keyboard numpad). Numpad 0 resets a category.
 % 
 % 9) Category codes of fixations can be exported to a file using the Save
 % option in the menu of GazeCode.
 % 
-% This open-source toolbox has been developed by J.S. Benjamins, R.S.
-% Hessels and I.T.C. Hooge. When you use it, please cite:
-% J.S. Benjamins, R.S. Hessels, I.T.C. Hooge (2017). GazeCode: an
-% open-source toolbox for mobile eye-tracking data analysis. Journal of Eye
-% Movement Research.
-% 
+% This open-source toolbox has been developed by J.S. Benjamins, R.S. Hessels 
+% and I.T.C. Hooge. When you use it, please cite:
+%
+% Jeroen S. Benjamins, Roy S. Hessels, and Ignace T. C. Hooge. 2018. 
+% Gazecode: open-source software for manual mapping of mobile eye-tracking 
+% data. In Proceedings of the 2018 ACM Symposium on Eye Tracking Research & 
+% Applications (ETRA '18). ACM, New York, NY, USA, Article 54, 4 pages. 
+% DOI: https://doi.org/10.1145/3204493.3204568
+%
 % For more information, questions, or to check whether we have updated to a
-% better version, e-mail: j.s.benjamins@uu.nl 
-% GazeCode is available from www.github.com/jsbenjamins/gazecode
-% 
-% Most parts of  GazeCode are licensed under the Creative Commons
-% Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT
-% license, and some may be under other licenses.
-% 
-% Tested on 
-% Matlab 2014a on Mac OSX 10.10.5
+% better version, e-mail: j.s.benjamins@uu.nl GazeCode is available from 
+% www.github.com/jsbenjamins/gazecode
+%
+% Most parts of GazeCode are licensed under the Creative Commons Attribution 
+% 4.0 (CC BY 4.0) license. Some functions are under MIT license, and some 
+% may be under other licenses.
+%
+% Tested on
+%
+% Matlab 2014a, 2017a, 2018b on Mac OSX 10.10.5 and Max OSX 10.14.3
 % Matlab 2013a on Windows 7 Enterprise, Service Pack 1
+% Matlab 2016a, 2018a on Windows 10
 %% start fresh
 clear all; close all; clc;
+qDEBUG = true;
+if qDEBUG
+    dbstop if error
+end
+
+if nargin<1 || isempty(settings)
+    myDir     = fileparts(mfilename('fullpath'));
+    settings  = jsondecode(fileread(fullfile(myDir,'defaults.json')));
+end
+
+% set it to false. If coding from GlassesViewer exists it will be loaded
+% from there.
+dataIsCrap = false;
 
 %% ========================================================================
 % BIG NOTE: every variable that is needed somewhere in this code is stored
@@ -125,22 +144,25 @@ gv.splashh = gazesplash([gv.appdir gv.fs 'splash.png']);
 pause(1);
 close(gv.splashh);
 
+addpath(genpath(gv.rootdir));
+
+cd(gv.codedir);
 %% Select type of data you want to code (currently a version for Pupil Labs and Tobii Pro Glasses are implemented
 
 % this is now a question dialog, but needs to be changed to a dropdown for
 % more options. Question dialog allows for only three options
 gv.datatype = questdlg(['What type of of mobile eye-tracking data do you want to code?'],'Data type?','Pupil Labs','Tobii Pro Glasses','Pupil Labs');
 
-if strcmp(gv.datatype,'Tobii Pro Glasses')
-    help dispTobiiInstructions;
-    dispTobiiInstructions;
-    clc;
-    TobiiOK = questdlg(['Did you place the video file and the data file from Tobii in the data folder of GazeCode?'],'Are the Tobii files in the right location?','Yes, continue','No & quit','Yes, continue');
-    if strcmp(TobiiOK,'No & quit')
-        disp('GazeCode quit, since you indicated not having put the Tobii files in the right location.')
-        return
-    end
-end
+% if strcmp(gv.datatype,'Tobii Pro Glasses')
+%     help dispTobiiInstructions;
+%     dispTobiiInstructions;
+%     clc;
+%     TobiiOK = questdlg(['Did you place the video file and the data file from Tobii in the data folder of GazeCode?'],'Are the Tobii files in the right location?','Yes, continue','No & quit','Yes, continue');
+%     if strcmp(TobiiOK,'No & quit')
+%         disp('GazeCode quit, since you indicated not having put the Tobii files in the right location.')
+%         return
+%     end
+% end
 
 % set camera settings of eye-tracker data
 switch gv.datatype
@@ -152,37 +174,98 @@ switch gv.datatype
         gv.ecr = [640 480]; % eye cam resolution (assumption, not known ATM)
 end
 
-%% load data folder
-while gv.foldnaam == 0
-    gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
-end
-
+%%
 while gv.catfoldnaam == 0
-    gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
+            gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
 end
 
-filmnaam    = strsplit(gv.foldnaam,gv.fs);
-gv.filmnaam    = filmnaam{end};
-
-% check if results dir already exists (in that case, load previous or start
-% over), otherwise create dir.
-resdir = [gv.resdir gv.fs gv.filmnaam];
-if exist([resdir gv.fs gv.filmnaam '.mat']) > 0
-    oudofnieuw = questdlg(['There already is a results directory with a file for ',gv.filmnaam,'. Do you want to load previous results or start over? Starting over will overwrite previous results.'],'Folder already labeled?','Load previous','Start over','Load previous');
-    if strcmp(oudofnieuw,'Load previous')
-        % IMPORANT NOTE FOR TESTING! This reloads gv! Use start over when
-        % making changes to this file.
-        load([resdir gv.fs gv.filmnaam '.mat']);
-        skipdataload = true;
-    else
-        rmdir(resdir,'s');
-        mkdir(resdir);
-    end
-elseif exist(resdir) == 0
-    mkdir(resdir);
-else
-    % do nothing
+%% load data folder
+switch gv.datatype
+    case 'Pupil Labs'
+        while gv.foldnaam == 0
+            gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
+        end
+        
+            
+        filmnaam    = strsplit(gv.foldnaam,gv.fs);
+        gv.filmnaam    = filmnaam{end};
+        
+        resdir = [gv.resdir gv.fs gv.filmnaam];
+        
+        if exist([resdir gv.fs gv.filmnaam '.mat']) > 0
+            oudofnieuw = questdlg(['There already is a results directory with a file for ',gv.filmnaam,'. Do you want to load previous results or start over? Starting over will overwrite previous results.'],'Folder already labeled?','Load previous','Start over','Load previous');
+            if strcmp(oudofnieuw,'Load previous')
+                % IMPORANT NOTE FOR TESTING! This reloads gv! Use start over when
+                % making changes to this file.
+                load([resdir gv.fs gv.filmnaam '.mat']);
+                skipdataload = true;
+            else
+                rmdir(resdir,'s');
+                mkdir(resdir);
+            end
+        elseif exist(resdir) == 0
+            mkdir(resdir);
+        else
+            % do nothing
+        end
+    case 'Tobii Pro Glasses'
+        % do the selecor thing
+        selectedDir = uigetdir(gv.datadir,'Select projects directory of SD card');
+        
+        if exist(fullfile(selectedDir,'segments'),'dir') && exist(fullfile(selectedDir,'recording.json'),'file')
+            recordingDir = selectedDir;
+        else
+            % assume this is a project dir. G2ProjectParser will fail if it is not
+            if ~exist(fullfile(selectedDir,'lookup.xls'),'file')
+                success = G2ProjectParser(selectedDir);
+                if ~success
+                    error('Could not find projects in the folder: %s',selectedDir);
+                end
+            end
+            recordingDir = recordingSelector(selectedDir);
+            if isempty(recordingDir)
+                return
+            end
+        end
+        
+        gv.foldnaam = recordingDir;
+        
+        filmnaam    = fullfile(gv.foldnaam,'segments','1','fullstream.mp4');
+        gv.filmnaam    = filmnaam;
+        
+        fid = fopen(fullfile(gv.foldnaam,'recording.json'),'rt');
+        recording = jsondecode(fread(fid,inf,'*char').');
+        fclose(fid);
+        gv.recName = recording.rec_info.Name;
+        fid = fopen(fullfile(gv.foldnaam,'participant.json'),'rt');
+        participant = jsondecode(fread(fid,inf,'*char').');
+        gv.partName = participant.pa_info.Name;
+        fclose(fid);
+        resdir = fullfile(gv.resdir,gv.partName,gv.recName);
+        
+        if exist(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName, '.mat'])) > 0
+            oudofnieuw = questdlg(['There already is a results directory with a file for ',gv.filmnaam,'. Do you want to load previous results or start over? Starting over will overwrite previous results.'],'Folder already labeled?','Load previous','Start over','Load previous');
+            if strcmp(oudofnieuw,'Load previous')
+                % IMPORANT NOTE FOR TESTING! This reloads gv! Use start over when
+                % making changes to this file.
+                load(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName, '.mat']));
+                skipdataload = true;
+            else
+                rmdir(resdir,'s');
+                mkdir(resdir);
+            end
+        elseif exist(resdir) == 0
+            mkdir(resdir);
+        else
+            % do nothing
+        end
 end
+
+
+
+
+
+
 
 %% init main screen, don't change this section if you're not sure what you are doing
 hm          = figure(1);
@@ -348,8 +431,7 @@ switch gv.datatype
         end
         gv.vidObj  = VideoReader([gv.foldnaam gv.fs 'exports' gv.fs hoeveelfilms.name gv.fs 'world_viz.mp4']);
     case 'Tobii Pro Glasses'
-        [videofile,videopath] = uigetfile('.mp4','Select video file');
-        gv.vidObj = VideoReader([videopath gv.fs videofile]);
+        gv.vidObj = VideoReader(gv.filmnaam);
 end
 
 gv.fr       = get(gv.vidObj,'FrameRate');
@@ -404,9 +486,27 @@ if ~skipdataload
             
         case 'Tobii Pro Glasses'
             
-            [filenaam, filepad] = uigetfile('.txt','Select data file with fixations');
+            cd(gv.codedir);
+            data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
+            data.quality        = computeDataQuality(gv.foldnaam, data, settings.dataQuality.windowLength);
+            coding              = getCodingData(gv.foldnaam, '', settings.coding, data);
+            coding.dataIsCrap   = dataIsCrap;
+            coding.fileOrClass  = ismember(lower(coding.stream.type),{'classifier','filestream'});
+            save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
             
-            [gv.datt, gv.datx, gv.daty] = leesgazedataTobii([filepad gv.fs filenaam]);
+            % only select data from ts > 0, ts is nulled at onset scene camera! 
+            sel = data.eye.binocular.ts >=0;
+             
+            gv.datt = data.eye.binocular.ts(sel);
+            gv.datx = data.eye.binocular.gp(sel,1);
+            gv.daty = data.eye.binocular.gp(sel,2);
+            
+            gv.datt = gv.datt*1000;
+            gv.datx = gv.datx * gv.wcr(1);
+            gv.daty = gv.daty * gv.wcr(2);
+%             [filenaam, filepad] = uigetfile('.txt','Select data file with fixations');
+%             
+%             [gv.datt, gv.datx, gv.daty] = leesgazedataTobii([filepad gv.fs filenaam]);
             
             %gv.datx = gv.datx * gv.wcr(1) - gv.wcr(1)/2;
             %gv.daty = gv.daty * gv.wcr(2) - gv.wcr(2)/2;
@@ -424,7 +524,12 @@ if ~skipdataload
     % Important is that this algorithm returns a vector that has fixation
     % start times at the odd and fixation end times at the even positions
     % of it.
-    gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
+    
+    % gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
+    gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+    
+    % or use coding.mat <- requires fixing of coding bug!!
+    % gv.fmark = gv.datt(coding.mark{4}(2:end));
     
     fixB = gv.fmark(1:2:end);
     fixE = gv.fmark(2:2:end);
@@ -467,14 +572,14 @@ if ~skipdataload
         gv.mfr(end) = gv.maxframe;
     end
     
-    gv.fixxpos = (gv.centerx + xmean);
-    gv.fixypos = (gv.centery - ymean);
+    gv.fixxpos = xmean;
+    gv.fixypos = ymean;
     
-    gv.fixxposB = gv.centerx + xstart;
-    gv.fixyposB = gv.centery + ystart;
+    gv.fixxposB = xstart;
+    gv.fixyposB = ystart;
     
-    gv.fixxposE = gv.centerx + xend;
-    gv.fixyposE = gv.centery + yend;
+    gv.fixxposE = xend;
+    gv.fixyposE = yend;
     
     
     gv.bfr(gv.bfr<1) = 1;
@@ -523,14 +628,22 @@ end
 function showmainfr(hm,gv)
 plaat = read(gv.vidObj,gv.mfr(gv.curfix));
 imagesc(plaat);
-frameas = gca;
+gv.frameas = gca;
 axis off;
 axis equal;
-% clc;
+
+
 disp(['Current fixation: ', num2str(gv.curfix),'/',num2str(gv.maxfix)]);
 
 set(gv.lp,'Title',['Current fixation: ' num2str(gv.curfix),'/',num2str(gv.maxfix) ]);
-hold(frameas,'off');
+hold(gv.frameas,'on');
+stip = scatter(gv.fixxpos(gv.curfix),gv.fixypos(gv.curfix),1000,'ro');
+set(stip,'MarkerEdgeColor',[0 0.85 1],'MarkerFaceAlpha',.65,'MarkerFaceColor',[0 0.85 1],'LineWidth',2);
+
+
+% clc;
+
+hold(gv.frameas,'off');
 setlabel(gv);
 
 if isempty(gv.data(:,end)==0)
@@ -632,11 +745,11 @@ mm1 = get(src,'parent');
 hm = get(mm1,'parent');
 gv = get(hm,'userdata');
 data = gv.data;
-filenaam = [gv.resdir gv.fs gv.filmnaam gv.fs gv.filmnaam '.xls'];
-while exist(filenaam,'file')
-    answer = inputdlg(['File: ', filenaam ,'.xls already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.filmnaam '_01.xls']});
-    filenaam = [gv.resdir gv.fs gv.filmnaam gv.fs answer{1}];
-end
+filenaam = fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName, '.xls']);
+% while exist(filenaam,'file')
+%     answer = inputdlg(['File: ', filenaam ,'.xls already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.recName '_01.xls']});
+%     filenaam = fullfile(gv.resdir,gv.partName,gv.recName answer{1});
+% end
 fid = fopen(filenaam,'w+');
 fprintf(fid,[repmat('%s\t',1,12),'%s\n'],'fix nr','fix start (ms)','fix end (ms)','fix dur (ms)','x start','y start','x end','y end','mean x','sd x','mean y','sd y','label');
 fgetl(fid);
@@ -653,9 +766,10 @@ if strcmp('Yes',knopsluit);
     %     commandwindow;
     disp('Closing...');
     gv = rmfield(gv,'lp');
-    save([gv.resdir gv.fs gv.filmnaam gv.fs gv.filmnaam '.mat'],'gv');
+    save(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'.mat']),'gv');
     disp('Saving...')
     set(src,'closerequestfcn','closereq');
+    rmpath(genpath(gv.rootdir));
     close(src);
 else
     disp('Program not closed. Continuing.');
