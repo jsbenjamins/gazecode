@@ -1,4 +1,4 @@
-function [v] = HC13_detvel(x,time)
+function [v] = HesselsEtAl19_detvel(x,time)
 
 dt1	= time(2:end-1) - time(1:end-2);
 dx1	= x(2:end-1)    - x(1:end-2);

@@ -505,7 +505,7 @@ if ~skipdataload
             coding              = getCodingData(gv.foldnaam, '', settings.coding, data,data.time.endTime);
             coding.dataIsCrap   = dataIsCrap;
             coding.fileOrClass  = ismember(lower(coding.stream.type),{'classifier','filestream'});
-            gv.coding           = coding;
+            save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
             
             % only select data from ts > 0, ts is nulled at onset scene camera! 
             sel = data.eye.binocular.ts >= coding.mark{5}(1);
@@ -544,7 +544,7 @@ if ~skipdataload
     % or use coding from geCodingData. Now set to Hessels et al. (2019). Set
     % it to stream 4 of coding for original Hooge & Camps (2013)
     % gv.fmark = coding.mark{4}*1000. 
-    gv.fmark = gv.coding.mark{5}*1000;
+    gv.fmark = coding.mark{5}*1000;
     
     fixB = gv.fmark(1:2:end)';
     fixE = gv.fmark(2:2:end)';
@@ -574,11 +574,6 @@ if ~skipdataload
     
     set(hm,'userdata',gv);
     disp('... done');
-    
-    % write coding to coding file including added GazeCode codes
-    gv.coding = addGazeCodeToCoding(gv.data(:,end),gv.coding,5);
-    coding = gv.coding;
-    save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
     
     % determine begin and end frame beloning to fixations start and end
     % times
@@ -639,7 +634,6 @@ else
 end
 data = gv.data;
 data(gv.curfix,end) = categorie;
-gv.coding.type{6}(2*gv.curfix-1) = categorie;
 gv.data = data;
 setlabel(gv);
 
@@ -789,8 +783,6 @@ if strcmp('Yes',knopsluit);
     disp('Closing...');
     gv = rmfield(gv,'lp');
     save(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'.mat']),'gv');
-    coding = gv.coding;
-    save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
     disp('Saving...')
     set(src,'closerequestfcn','closereq');
     rmpath(genpath(gv.rootdir));

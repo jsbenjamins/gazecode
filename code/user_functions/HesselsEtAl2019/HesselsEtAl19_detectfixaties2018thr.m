@@ -1,10 +1,9 @@
-function [fmark] = HC13_detectfixaties2015(mvel,f,time)
+function [thrfinal] = HesselsEtAl19_detectfixaties2018thr(mvel,f)
 
 % cleaned up on
 % 16 october 2011 IH
 
 thr             = f.thr;
-minfix          = f.minfix;                        % minfix in ms
 
 qvel            = mvel < thr;                      % look for velocity below threshold
 qnotnan         = ~isnan(mvel);
@@ -27,18 +26,7 @@ while 1
     counter     = counter + 1;
 end
 
-thr2            = meanvel + f.lambda*stdvel;       % determine new threshold based on data noise
-qvel            = mvel < thr2;                     % look for velocity below threshold
-[on,off]        = HC13_detectswitches(qvel');      % determine fixations
+thr2            = meanvel + f.lambda*stdvel;        % determine new threshold based on data noise
 
-on              = time(on);                        % convert to time
-off             = time(off);                       % convert to time
-
-qfix            = off - on > minfix;               % look for small fixations       
-on              = on(qfix);                        % delete fixations smaller than minfix
-off             = off(qfix);                       % delete fixations smaller than minfix
-
-on(2:end)       = on(2:end);
-off(1:end-1)    = off(1:end-1);
-
-fmark           = sort([on;off]);                  % sort the markers
+% make vector for thr2 of length mvel
+thrfinal        = repmat(thr2,numel(mvel),1);
