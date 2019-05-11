@@ -499,18 +499,13 @@ if ~skipdataload
             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
             data.quality        = computeDataQuality(gv.foldnaam, data, settings.dataQuality.windowLength);
             data.ui.haveEyeVideo = isfield(data.video,'eye');
-            if data.ui.haveEyeVideo
-                data.time.endTime = min([data.video.scene.fts(end) data.video.eye.fts(end)]);
-            else
-                data.time.endTime = data.video.scene.fts(end);
-            end
-            coding              = getCodingData(gv.foldnaam, '', settings.coding, data,data.time.endTime);
+            coding              = getCodingData(gv.foldnaam, '', settings.coding, data);
             coding.dataIsCrap   = dataIsCrap;
             coding.fileOrClass  = ismember(lower(coding.stream.type),{'classifier','filestream'});
             gv.coding           = coding;
             
             % only select data from ts > 0, ts is nulled at onset scene camera! 
-            sel = data.eye.binocular.ts >= coding.mark{5}(1);
+            sel = data.eye.binocular.ts >= data.time.startTime & data.eye.binocular.ts <= data.time.endTime;
              
             gv.datt = data.eye.binocular.ts(sel);
             gv.datx = data.eye.binocular.gp(sel,1);
@@ -545,8 +540,9 @@ if ~skipdataload
     
     % or use coding from geCodingData. Now set to Hessels et al. (2019). Set
     % it to stream 4 of coding for original Hooge & Camps (2013)
+    3;
     % gv.fmark = coding.mark{4}*1000. 
-    gv.fmark = gv.coding.mark{5}*1000;
+    gv.fmark = gv.coding.mark{4}*1000;
     
     fixB = gv.fmark(1:2:end)';
     fixE = gv.fmark(2:2:end)';
