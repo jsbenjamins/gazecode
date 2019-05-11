@@ -72,6 +72,7 @@ if qDEBUG
     dbstop if error
 end
 
+myDir     = fileparts(mfilename('fullpath'));
 if nargin<1 || isempty(settings)
     if ~isempty(which('matlab.internal.webservices.fromJSON'))
         jsondecoder = @matlab.internal.webservices.fromJSON;
@@ -80,8 +81,7 @@ if nargin<1 || isempty(settings)
     else
         error('Your MATLAB version does not provide a way to decode json (which means its really old), upgrade to something newer');
     end
-    myDir     = fileparts(mfilename('fullpath'));
-    settings  = jsondecoder(fileread(fullfile(myDir,'defaults.json')));
+    settings  = jsondecoder(fileread(fullfile(myDir,'..','GlassesViewer','defaults.json')));
 end
 
 % set it to false. If coding from GlassesViewer exists it will be loaded
@@ -122,10 +122,9 @@ gv.cat0but = {'0','numpad0'};
 gv.foldnaam     = 0;
 gv.catfoldnaam  = 0;
 gv.fs           = filesep;
-gv.codedir      = pwd;
-addpath(gv.codedir);
-
-gv.rootdir      = pwd;
+gv.codedir      = myDir;
+gv.rootdir      = myDir;
+cd(gv.rootdir);
 
 cd ..;
 
@@ -147,13 +146,17 @@ cd ..;
 gv.datadir      = [cd gv.fs 'data'];
 cd(gv.datadir);
 
+cd ..;
+
+gv.glassesviewerdir  = [cd gv.fs 'GlassesViewer'];
+cd(gv.glassesviewerdir);
+
+addpath(genpath(gv.rootdir),genpath(gv.glassesviewerdir));
+cd(gv.codedir);
+
 gv.splashh = gazesplash([gv.appdir gv.fs 'splash.png']);
 pause(1);
 close(gv.splashh);
-
-addpath(genpath(gv.rootdir));
-
-cd(gv.codedir);
 %% Select type of data you want to code (currently a version for Pupil Labs and Tobii Pro Glasses are implemented
 
 % this is now a question dialog, but needs to be changed to a dropdown for
@@ -493,7 +496,6 @@ if ~skipdataload
             
         case 'Tobii Pro Glasses'
             
-            cd(gv.codedir);
             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
             data.quality        = computeDataQuality(gv.foldnaam, data, settings.dataQuality.windowLength);
             data.ui.haveEyeVideo = isfield(data.video,'eye');
