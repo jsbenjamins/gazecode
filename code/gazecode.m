@@ -538,11 +538,16 @@ if ~skipdataload
     % gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
     % gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
     
-    % or use coding from geCodingData. Now set to Hessels et al. (2019). Set
-    % it to stream 4 of coding for original Hooge & Camps (2013)
-    3;
-    % gv.fmark = coding.mark{4}*1000. 
-    gv.fmark = gv.coding.mark{4}*1000;
+    % or use coding from getCodingData.
+    if 0
+        useStream = 'Hooge & Camps (2013): slow/fast';
+    else
+        useStream = 'Hessels et al. (2019): slow/fast';
+    end
+    qStream = strcmp(gv.coding.stream.lbls,useStream);
+    assert(any(qStream),'stream ''%s'' not found',useStream);
+    assert(sum(qStream)==1,'stream ''%s'' found more than once, need a unique stream',useStream);
+    gv.fmark = gv.coding.mark{qStream}*1000;
     
     fixB = gv.fmark(1:2:end)';
     fixE = gv.fmark(2:2:end)';
