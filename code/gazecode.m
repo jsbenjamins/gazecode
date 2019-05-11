@@ -183,7 +183,7 @@ end
 
 %%
 while gv.catfoldnaam == 0
-            gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
+    gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
 end
 
 %% load data folder
@@ -782,21 +782,25 @@ end
 
 % closing and saving function
 function sluitaf(src,evt)
-gv = get(src,'userdata');
-knopsluit = questdlg('You''re about to close the program. Are you sure you''re done and want to quit?','Are you sure?','Yes','No','No');
-if strcmp('Yes',knopsluit);
-    %     commandwindow;
-    disp('Closing...');
-    gv = rmfield(gv,'lp');
-    save(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'.mat']),'gv');
-    coding = gv.coding;
-    save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
-    disp('Saving...')
-    set(src,'closerequestfcn','closereq');
-    rmpath(genpath(gv.rootdir));
-    close(src);
-else
-    disp('Program not closed. Continuing.');
+try
+    gv = get(src,'userdata');
+    knopsluit = questdlg('You''re about to close the program. Are you sure you''re done and want to quit?','Are you sure?','Yes','No','No');
+    if strcmp('Yes',knopsluit)
+        %     commandwindow;
+        disp('Closing...');
+        gv = rmfield(gv,'lp');
+        save(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'.mat']),'gv');
+        coding = gv.coding;
+        save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
+        disp('Saving...')
+        set(src,'closerequestfcn','closereq');
+        rmpath(genpath(gv.rootdir));
+        close(src);
+    else
+        disp('Program not closed. Continuing.');
+    end
+catch
+    closereq()
 end
 end
 
