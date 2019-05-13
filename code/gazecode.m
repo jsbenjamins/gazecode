@@ -72,6 +72,7 @@ if qDEBUG
     dbstop if error
 end
 
+myDir     = fileparts(mfilename('fullpath'));
 if nargin<1 || isempty(settings)
     if ~isempty(which('matlab.internal.webservices.fromJSON'))
         jsondecoder = @matlab.internal.webservices.fromJSON;
@@ -80,8 +81,7 @@ if nargin<1 || isempty(settings)
     else
         error('Your MATLAB version does not provide a way to decode json (which means its really old), upgrade to something newer');
     end
-    myDir     = fileparts(mfilename('fullpath'));
-    settings  = jsondecoder(fileread(fullfile(myDir,'defaults.json')));
+    settings  = jsondecoder(fileread(fullfile(myDir,'..','GlassesViewer','defaults.json')));
 end
 
 % set it to false. If coding from GlassesViewer exists it will be loaded
@@ -122,10 +122,9 @@ gv.cat0but = {'0','numpad0'};
 gv.foldnaam     = 0;
 gv.catfoldnaam  = 0;
 gv.fs           = filesep;
-gv.codedir      = pwd;
-addpath(gv.codedir);
-
-gv.rootdir      = pwd;
+gv.codedir      = myDir;
+gv.rootdir      = myDir;
+cd(gv.rootdir);
 
 cd ..;
 
@@ -147,13 +146,17 @@ cd ..;
 gv.datadir      = [cd gv.fs 'data'];
 cd(gv.datadir);
 
+cd ..;
+
+gv.glassesviewerdir  = [cd gv.fs 'GlassesViewer'];
+cd(gv.glassesviewerdir);
+
+addpath(genpath(gv.rootdir),genpath(gv.glassesviewerdir));
+cd(gv.codedir);
+
 gv.splashh = gazesplash([gv.appdir gv.fs 'splash.png']);
 pause(1);
 close(gv.splashh);
-
-addpath(genpath(gv.rootdir));
-
-cd(gv.codedir);
 %% Select type of data you want to code (currently a version for Pupil Labs and Tobii Pro Glasses are implemented
 
 % this is now a question dialog, but needs to be changed to a dropdown for
@@ -183,7 +186,7 @@ end
 
 %%
 while gv.catfoldnaam == 0
-            gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
+    gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
 end
 
 %% load data folder
@@ -493,22 +496,16 @@ if ~skipdataload
             
         case 'Tobii Pro Glasses'
             
-            cd(gv.codedir);
             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
             data.quality        = computeDataQuality(gv.foldnaam, data, settings.dataQuality.windowLength);
             data.ui.haveEyeVideo = isfield(data.video,'eye');
-            if data.ui.haveEyeVideo
-                data.time.endTime = min([data.video.scene.fts(end) data.video.eye.fts(end)]);
-            else
-                data.time.endTime = data.video.scene.fts(end);
-            end
-            coding              = getCodingData(gv.foldnaam, '', settings.coding, data,data.time.endTime);
+            coding              = getCodingData(gv.foldnaam, '', settings.coding, data);
             coding.dataIsCrap   = dataIsCrap;
             coding.fileOrClass  = ismember(lower(coding.stream.type),{'classifier','filestream'});
             gv.coding           = coding;
             
             % only select data from ts > 0, ts is nulled at onset scene camera! 
-            sel = data.eye.binocular.ts >= coding.mark{5}(1);
+            sel = data.eye.binocular.ts >= data.time.startTime & data.eye.binocular.ts <= data.time.endTime;
              
             gv.datt = data.eye.binocular.ts(sel);
             gv.datx = data.eye.binocular.gp(sel,1);
@@ -541,10 +538,16 @@ if ~skipdataload
     % gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
     % gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
     
-    % or use coding from geCodingData. Now set to Hessels et al. (2019). Set
-    % it to stream 4 of coding for original Hooge & Camps (2013)
-    % gv.fmark = coding.mark{4}*1000. 
-    gv.fmark = gv.coding.mark{5}*1000;
+    % or use coding from getCodingData.
+    if 0
+        useStream = 'Hooge & Camps (2013): slow/fast';
+    else
+        useStream = 'Hessels et al. (2019): slow/fast';
+    end
+    qStream = strcmp(gv.coding.stream.lbls,useStream);
+    assert(any(qStream),'stream ''%s'' not found',useStream);
+    assert(sum(qStream)==1,'stream ''%s'' found more than once, need a unique stream',useStream);
+    gv.fmark = gv.coding.mark{qStream}*1000;
     
     fixB = gv.fmark(1:2:end)';
     fixE = gv.fmark(2:2:end)';
@@ -782,21 +785,25 @@ end
 
 % closing and saving function
 function sluitaf(src,evt)
-gv = get(src,'userdata');
-knopsluit = questdlg('You''re about to close the program. Are you sure you''re done and want to quit?','Are you sure?','Yes','No','No');
-if strcmp('Yes',knopsluit);
-    %     commandwindow;
-    disp('Closing...');
-    gv = rmfield(gv,'lp');
-    save(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'.mat']),'gv');
-    coding = gv.coding;
-    save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
-    disp('Saving...')
-    set(src,'closerequestfcn','closereq');
-    rmpath(genpath(gv.rootdir));
-    close(src);
-else
-    disp('Program not closed. Continuing.');
+try
+    gv = get(src,'userdata');
+    knopsluit = questdlg('You''re about to close the program. Are you sure you''re done and want to quit?','Are you sure?','Yes','No','No');
+    if strcmp('Yes',knopsluit)
+        %     commandwindow;
+        disp('Closing...');
+        gv = rmfield(gv,'lp');
+        save(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'.mat']),'gv');
+        coding = gv.coding;
+        save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
+        disp('Saving...')
+        set(src,'closerequestfcn','closereq');
+        rmpath(genpath(gv.rootdir));
+        close(src);
+    else
+        disp('Program not closed. Continuing.');
+    end
+catch
+    closereq()
 end
 end
 

@@ -1,0 +1,3 @@
+[submodule "GlassesViewer"]
+	path = GlassesViewer
+	url = ../GlassesViewer.git

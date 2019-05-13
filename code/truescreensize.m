@@ -8,3 +8,6 @@ function [screensize] = truescreensize()
 ge = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment;
 gd = ge.getDefaultScreenDevice;
 screensize = [gd.getDisplayMode.getWidth gd.getDisplayMode.getHeight];
+
+% take display scaling into account
+screensize = screensize/getDPIScale;
