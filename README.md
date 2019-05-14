@@ -13,9 +13,9 @@
   in Matlab
   
   2) Export both a visualisation video of raw mobile eye-tracking data and
-  the data itself. For Tobii Pro Lab recordings  this is nog longer necessary, 
+  the data itself. For Tobii Pro Lab recordings  this is no longer necessary, 
   the content of the SD card can simply be used!
-  (demo data is available at http://tinyurl.com/gazecodedemodata)
+  (demo data is available at http://tinyurl.com/gazecodedemodata for pupil labs, for Tobii Pro Lab is is included)
   
   3) Put the video file and the data file in the data folder of GazeCode
   
