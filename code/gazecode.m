@@ -72,17 +72,8 @@ if qDEBUG
     dbstop if error
 end
 
-myDir     = fileparts(mfilename('fullpath'));
-if nargin<1 || isempty(settings)
-    if ~isempty(which('matlab.internal.webservices.fromJSON'))
-        jsondecoder = @matlab.internal.webservices.fromJSON;
-    elseif ~isempty(which('jsondecode'))
-        jsondecoder = @matlab.internal.webservices.fromJSON;
-    else
-        error('Your MATLAB version does not provide a way to decode json (which means its really old), upgrade to something newer');
-    end
-    settings  = jsondecoder(fileread(fullfile(myDir,'..','GlassesViewer','defaults.json')));
-end
+% myDir     = fileparts(mfilename('fullpath'));
+
 
 % set it to false. If coding from GlassesViewer exists it will be loaded
 % from there.
@@ -122,11 +113,9 @@ gv.cat0but = {'0','numpad0'};
 gv.foldnaam     = 0;
 gv.catfoldnaam  = 0;
 gv.fs           = filesep;
-gv.codedir      = myDir;
-gv.rootdir      = myDir;
+gv.codedir      = cd; cd ..;
+gv.rootdir      = cd;
 cd(gv.rootdir);
-
-cd ..;
 
 gv.resdir       = [cd gv.fs 'results'];
 cd(gv.resdir);
@@ -146,6 +135,7 @@ cd ..;
 gv.datadir      = [cd gv.fs 'data'];
 cd(gv.datadir);
 
+cd(gv.rootdir);
 cd ..;
 
 gv.glassesviewerdir  = [cd gv.fs 'GlassesViewer'];
@@ -153,6 +143,17 @@ cd(gv.glassesviewerdir);
 
 addpath(genpath(gv.rootdir),genpath(gv.glassesviewerdir));
 cd(gv.codedir);
+
+if nargin<1 || isempty(settings)
+    if ~isempty(which('matlab.internal.webservices.fromJSON'))
+        jsondecoder = @matlab.internal.webservices.fromJSON;
+    elseif ~isempty(which('jsondecode'))
+        jsondecoder = @matlab.internal.webservices.fromJSON;
+    else
+        error('Your MATLAB version does not provide a way to decode json (which means its really old), upgrade to something newer');
+    end
+    settings  = jsondecoder(fileread(fullfile(gv.glassesviewerdir,'defaults.json')));
+end
 
 gv.splashh = gazesplash([gv.appdir gv.fs 'splash.png']);
 pause(1);
@@ -499,10 +500,22 @@ if ~skipdataload
             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
             data.quality        = computeDataQuality(gv.foldnaam, data, settings.dataQuality.windowLength);
             data.ui.haveEyeVideo = isfield(data.video,'eye');
+            if ~exist(fullfile(gv.foldnaam,'gazeCodeCoding.txt'))
+                copyfile(fullfile(gv.codedir,'gazeCodeCoding.txt'),fullfile(gv.foldnaam,'gazeCodeCoding.txt'));
+            end
             coding              = getCodingData(gv.foldnaam, '', settings.coding, data);
             coding.dataIsCrap   = dataIsCrap;
             coding.fileOrClass  = ismember(lower(coding.stream.type),{'classifier','filestream'});
             gv.coding           = coding;
+            
+            % set numbers of events in gazeCode stream equal to slow phases
+            % and fast phases.
+            gv.coding.mark{6}   = gv.coding.mark{5};
+            gv.coding.type{6}   = gv.coding.type{5};
+            
+            % set saccades to type 'none' = 1
+            gv.coding.type{6}(gv.coding.type{6} ==4) = 1;
+            
             
             % only select data from ts > 0, ts is nulled at onset scene camera! 
             sel = data.eye.binocular.ts >= data.time.startTime & data.eye.binocular.ts <= data.time.endTime;
@@ -514,13 +527,7 @@ if ~skipdataload
             gv.datt = gv.datt*1000;
             gv.datx = gv.datx * gv.wcr(1);
             gv.daty = gv.daty * gv.wcr(2);
-%             [filenaam, filepad] = uigetfile('.txt','Select data file with fixations');
-%             
-%             [gv.datt, gv.datx, gv.daty] = leesgazedataTobii([filepad gv.fs filenaam]);
-            
-            %gv.datx = gv.datx * gv.wcr(1) - gv.wcr(1)/2;
-            %gv.daty = gv.daty * gv.wcr(2) - gv.wcr(2)/2;
-            
+          
         otherwise
             disp('Unknown data type, crashing in 3,2,1,...');
     end
@@ -577,12 +584,7 @@ if ~skipdataload
     
     set(hm,'userdata',gv);
     disp('... done');
-    
-    % write coding to coding file including added GazeCode codes
-    gv.coding = addGazeCodeToCoding(gv.data(:,end),gv.coding,5);
-    coding = gv.coding;
-    save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
-    
+      
     % determine begin and end frame beloning to fixations start and end
     % times
     gv.bfr     = floor(fixB/frdur);
@@ -642,7 +644,9 @@ else
 end
 data = gv.data;
 data(gv.curfix,end) = categorie;
-gv.coding.type{6}(2*gv.curfix-1) = categorie;
+% put categorie also in coding struct, add 2 as first categories are null
+% and zero
+gv.coding.type{6}(2*gv.curfix-1) = gv.coding.codeCats{6}{categorie+2,2};
 gv.data = data;
 setlabel(gv);
 
@@ -787,6 +791,11 @@ end
 function sluitaf(src,evt)
 try
     gv = get(src,'userdata');
+    % get gazeCodes for GlasseViewer and write them to a file
+    gazecodes = [gv.coding.mark{6}(1:end-1)', gv.coding.type{6}'];
+    fid = fopen(fullfile(gv.foldnaam,'gazeCodeCoding.txt'),'w');
+    fprintf(fid,'%f\t%d\n',gazecodes');
+    fclose(fid);
     knopsluit = questdlg('You''re about to close the program. Are you sure you''re done and want to quit?','Are you sure?','Yes','No','No');
     if strcmp('Yes',knopsluit)
         %     commandwindow;
