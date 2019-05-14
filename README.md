@@ -2,11 +2,11 @@
   
   This software allows for fast and flexible manual classification of any
   mobile eye-tracking data. Currently Pupil Labs and Tobii Pro Glasses data 
-  are supported. The software loads an exported visualisation (video file) 
+  are fully supported. The software loads an exported visualisation (video file) 
   and the data of a mobile eye-tracking measurement, runs a fixation
   detection algorithm (adaptation of Hooge and  Camps, 2013, Frontiers in Psychology, 4,
   996) and offers a simple to use interface to browse through and
-  categorise the detected fixations.
+  categorise the detected fixations. For this version that is integrated with GlassesViewer to work, make sure to download GlassesViewer (https://github.com/dcnieho/GlassesViewer) and put it in the same directory as were your gazecode directory is located (e.g. <rootdir>/gazecode and <rootdir>/GlassesViewer).
   
   How to use:
   1) Place the GazeCode files in a directory to which you can easily navigate
