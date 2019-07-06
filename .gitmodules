@@ -1,4 +1,4 @@
 [submodule "GlassesViewer"]
 	path = GlassesViewer
-	url = ../../dcnieho/GlassesViewer.git
+	url = https://github.com/dcnieho/GlassesViewer.git
 
