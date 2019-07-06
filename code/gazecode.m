@@ -496,13 +496,15 @@ if ~skipdataload
             % gazecode streams). If user selects a stream to code, they can
             % select a current stream to overwrite, or select to add a new
             % stream.
-            gv.coding.outIdx = length(gv.coding.mark)+1;
+            gv.coding.outIdx    = length(gv.coding.mark)+1;
+            gv.coding.streamName= 'GazeCode output';    % TODO: add name of coded event?
             gv.coding.mark{gv.coding.outIdx}    = gv.coding.mark{idx};
             gv.coding.type{gv.coding.outIdx}    = gv.coding.type{idx};
             
-            % set everything not of interest to type 1 ('none')
+            % set everything not of interest to type 1 ('other')
             % TODO: make GUI asking for which event
-            gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}~=2) = 1;
+            eventToCode = 2;
+            gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}~=eventToCode) = 1;
             
             % only select data from ts > 0, ts is nulled at onset scene camera! 
             sel = data.eye.binocular.ts >= data.time.startTime & data.eye.binocular.ts <= data.time.endTime;
@@ -614,9 +616,10 @@ else
 end
 data = gv.data;
 data(gv.curfix,end) = categorie;
-% put categorie also in coding struct, add 2 as first categories are null
-% and zero
-gv.coding.type{gv.coding.outIdx}(2*gv.curfix-1) = gv.coding.codeCats{gv.coding.outIdx}{categorie+2,2};
+% put categorie also in coding struct, note that categories are power of 2,
+% and that 1 is "other". categorie 2 should correspond to code 2
+% ("uncoded"), so categorie+1 below
+gv.coding.type{gv.coding.outIdx}(2*gv.curfix-1) = 2^(categorie+1);
 gv.data = data;
 setlabel(gv);
 
@@ -774,6 +777,10 @@ try
                 fprintf(fid,'%f\t%d\n',gazecodes');
                 fclose(fid);
                 % also store to coding.mat
+                % 1. add stream to settings, if needed
+                getCodingStreamSetup(gv.coding.streamName);
+                % 2. add to coding.stream.available
+                % 3. mark and type are already good, we're ready to save
                 coding = gv.coding;
                 save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
         end
@@ -789,3 +796,11 @@ catch
 end
 end
 
+
+function str = getCodingStreamSetup(name)
+str.type        = 'handStream';
+str.tag         = 'gazeCodeStream';
+str.lbl         = name;
+str.locked      = false;
+str.categories  = {'other';20;'uncoded';1;'GC1';2;'GC2';3;'GC3';4;'GC4';5;'GC5';6;'GC6';7;'GC7';8;'GC8';9;'GC9';10};
+end
