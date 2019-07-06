@@ -223,24 +223,6 @@ switch gv.datatype
         participant = jsondecoder(fread(fid,inf,'*char').');
         gv.partName = participant.pa_info.Name;
         fclose(fid);
-        resdir = fullfile(gv.resdir,gv.partName,gv.recName);
-        
-        if exist(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName, '.mat'])) > 0
-            oudofnieuw = questdlg(['There already is a results directory with a file for ',gv.filmnaam,'. Do you want to load previous results or start over? Starting over will overwrite previous results.'],'Folder already labeled?','Load previous','Start over','Load previous');
-            if strcmp(oudofnieuw,'Load previous')
-                % IMPORANT NOTE FOR TESTING! This reloads gv! Use start over when
-                % making changes to this file.
-                load(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName, '.mat']));
-                skipdataload = true;
-            else
-                rmdir(resdir,'s');
-                mkdir(resdir);
-            end
-        elseif exist(resdir) == 0
-            mkdir(resdir);
-        else
-            % do nothing
-        end
 end
 
 
@@ -763,7 +745,6 @@ disp('Saving to text...');
 mm1 = get(src,'parent');
 hm = get(mm1,'parent');
 gv = get(hm,'userdata');
-data = gv.data;
 filenaam = fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName, '.xls']);
 % while exist(filenaam,'file')
 %     answer = inputdlg(['File: ', filenaam ,'.xls already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.recName '_01.xls']});
@@ -781,20 +762,24 @@ end
 function sluitaf(src,evt)
 try
     gv = get(src,'userdata');
-    % get gazeCodes for GlasseViewer and write them to a file
-    gazecodes = [gv.coding.mark{gv.coding.outIdx}(1:end-1)', gv.coding.type{gv.coding.outIdx}'];
-    fid = fopen(fullfile(gv.foldnaam,'gazeCodeCoding.txt'),'w');
-    fprintf(fid,'%f\t%d\n',gazecodes');
-    fclose(fid);
     knopsluit = questdlg('You''re about to close the program. Are you sure you''re done and want to quit?','Are you sure?','Yes','No','No');
     if strcmp('Yes',knopsluit)
-        %     commandwindow;
-        disp('Closing...');
-        gv = rmfield(gv,'lp');
-        save(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'.mat']),'gv');
-        coding = gv.coding;
-        save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
-        disp('Saving...')
+        switch gv.datatype
+            case 'Pupil Labs'
+                gv = rmfield(gv,'lp');
+                save(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'.mat']),'gv');
+            case 'Tobii Pro Glasses'
+                % get gazeCodes for GlasseViewer and write them to a text
+                % file
+                gazecodes = [gv.coding.mark{gv.coding.outIdx}(1:end-1)', gv.coding.type{gv.coding.outIdx}'];
+                fid = fopen(fullfile(gv.foldnaam,'gazeCodeCoding.txt'),'w');
+                fprintf(fid,'%f\t%d\n',gazecodes');
+                fclose(fid);
+                % also store to coding.mat
+                coding = gv.coding;
+                save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
+        end
+        
         set(src,'closerequestfcn','closereq');
         rmpath(genpath(gv.rootdir));
         close(src);
