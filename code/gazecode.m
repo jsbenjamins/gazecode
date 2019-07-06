@@ -773,7 +773,7 @@ try
                 % get gazeCodes for GlasseViewer and write them to a text
                 % file
                 gazecodes = [gv.coding.mark{gv.coding.outIdx}(1:end-1)', gv.coding.type{gv.coding.outIdx}'];
-                fid = fopen(fullfile(gv.foldnaam,'gazeCodeCoding.txt'),'w');
+                fid = fopen(fullfile(gv.foldnaam,'gazeCodeCoding.txt'),'w');    % TODO: unieke naam per stream? lijkt me wel handig
                 fprintf(fid,'%f\t%d\n',gazecodes');
                 fclose(fid);
                 % also store to coding.mat
