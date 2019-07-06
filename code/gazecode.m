@@ -511,6 +511,11 @@ if ~skipdataload
             gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
             gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
             
+            % TODO: this needs the following, somehow properly populated
+            % gv.coding.mark{1}
+            % gv.coding.type{1}
+            gv.coding.outIdx = 1;
+            
         case 'Tobii Pro Glasses'
             
             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
@@ -535,13 +540,20 @@ if ~skipdataload
             
             
             % make new coding stream for user's output
-            nIdx = length(gv.coding.mark)+1;
-            gv.coding.mark{nIdx}    = gv.coding.mark{idx};
-            gv.coding.type{nIdx}    = gv.coding.type{idx};
+            % TODO: user should be able to select a stream to continue with
+            % (auto-detect which streams are gazecode streams, show in
+            % separate section of stream selection GUI: either code events
+            % in one of these streams, or continue with one of the below
+            % gazecode streams). If user selects a stream to code, they can
+            % select a current stream to overwrite, or select to add a new
+            % stream.
+            gv.coding.outIdx = length(gv.coding.mark)+1;
+            gv.coding.mark{gv.coding.outIdx}    = gv.coding.mark{idx};
+            gv.coding.type{gv.coding.outIdx}    = gv.coding.type{idx};
             
             % set everything not of interest to type 1 ('none')
             % TODO: make GUI asking for which event
-            gv.coding.type{nIdx}(gv.coding.type{nIdx}~=2) = 1;
+            gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}~=2) = 1;
             
             % only select data from ts > 0, ts is nulled at onset scene camera! 
             sel = data.eye.binocular.ts >= data.time.startTime & data.eye.binocular.ts <= data.time.endTime;
@@ -655,7 +667,7 @@ data = gv.data;
 data(gv.curfix,end) = categorie;
 % put categorie also in coding struct, add 2 as first categories are null
 % and zero
-gv.coding.type{6}(2*gv.curfix-1) = gv.coding.codeCats{6}{categorie+2,2};
+gv.coding.type{gv.coding.outIdx}(2*gv.curfix-1) = gv.coding.codeCats{gv.coding.outIdx}{categorie+2,2};
 gv.data = data;
 setlabel(gv);
 
@@ -801,7 +813,7 @@ function sluitaf(src,evt)
 try
     gv = get(src,'userdata');
     % get gazeCodes for GlasseViewer and write them to a file
-    gazecodes = [gv.coding.mark{6}(1:end-1)', gv.coding.type{6}'];
+    gazecodes = [gv.coding.mark{gv.coding.outIdx}(1:end-1)', gv.coding.type{gv.coding.outIdx}'];
     fid = fopen(fullfile(gv.foldnaam,'gazeCodeCoding.txt'),'w');
     fprintf(fid,'%f\t%d\n',gazecodes');
     fclose(fid);
