@@ -28,10 +28,8 @@ function gazecode(settings)
 % 4.0 (CC BY 4.0) license. Some functions are under MIT license, and some 
 % may be under other licenses.
 %
-% Tested on
-%
-% Matlab 2014a, 2017a, 2018b on Mac OSX 10.10.5 and Max OSX 10.14.3
-% Matlab 2013a on Windows 7 Enterprise, Service Pack 1
+% Tested on:
+% Matlab 2017a, 2018b on Mac OSX 10.10.5 and Max OSX 10.14.3
 % Matlab 2016a, 2018a on Windows 10
 
 %% start fresh
