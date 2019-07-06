@@ -181,8 +181,9 @@ switch gv.datatype
         gv.wcr = [1280 720]; % world cam resolution
         gv.ecr = [640 480]; % eye cam resolution
     case 'Tobii Pro Glasses'
-        gv.wcr = [1920 1080]; % world cam resolution
-        gv.ecr = [640 480]; % eye cam resolution (assumption, not known ATM)
+        % this is in glassesViewer's export, at
+        % data.video.scene.width, data.video.scene.height
+        % data.video.eye.width, data.video.eye.height
 end
 
 %%
@@ -224,6 +225,7 @@ switch gv.datatype
         selectedDir = uigetdir(gv.datadir,'Select projects directory of SD card');
         
         if exist(fullfile(selectedDir,'segments'),'dir') && exist(fullfile(selectedDir,'recording.json'),'file')
+            % user selected what is very likely a recording's dir directly
             recordingDir = selectedDir;
         else
             % assume this is a project dir. G2ProjectParser will fail if it is not
@@ -242,7 +244,7 @@ switch gv.datatype
         gv.foldnaam = recordingDir;
         
         filmnaam    = fullfile(gv.foldnaam,'segments','1','fullstream.mp4');
-        gv.filmnaam    = filmnaam;
+        gv.filmnaam = filmnaam;
         
         fid = fopen(fullfile(gv.foldnaam,'recording.json'),'rt');
         recording = jsondecoder(fread(fid,inf,'*char').');
@@ -462,7 +464,6 @@ if ~skipdataload
     % want to skip data loading
     
     gv = get(hm,'userdata');
-    disp('Determining fixations...');
     switch gv.datatype
         case 'Pupil Labs'
             tempfold = folderfromfolder([gv.foldnaam gv.fs 'exports']);
@@ -495,66 +496,68 @@ if ~skipdataload
             gv.datx = gv.datx * gv.wcr(1) - gv.wcr(1)/2;
             gv.daty = gv.daty * gv.wcr(2) - gv.wcr(2)/2;
             
+            % determine start and end times of each fixation in one vector (odd
+            % number start times of fixations even number stop times)
+            
+            % The line below determines fixations start and stop times since the
+            % beginning of the recording. For this detection of fixations the algo-
+            % rithm of Hooge and Camps (2013), but this can be replaced by your own
+            % favourite or perhaps more suitable fixation detectioon algorithm.
+            % Important is that this algorithm returns a vector that has fixation
+            % start times at the odd and fixation end times at the even positions
+            % of it.
+            
+            disp('Determining fixations...');
+            gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
+            gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            
         case 'Tobii Pro Glasses'
             
             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
             data.quality        = computeDataQuality(gv.foldnaam, data, settings.dataQuality.windowLength);
             data.ui.haveEyeVideo = isfield(data.video,'eye');
-            if ~exist(fullfile(gv.foldnaam,'gazeCodeCoding.txt'))
-                copyfile(fullfile(gv.codedir,'gazeCodeCoding.txt'),fullfile(gv.foldnaam,'gazeCodeCoding.txt'));
-            end
             coding              = getCodingData(gv.foldnaam, '', settings.coding, data);
             coding.dataIsCrap   = dataIsCrap;
             coding.fileOrClass  = ismember(lower(coding.stream.type),{'classifier','filestream'});
             gv.coding           = coding;
             
-            % set numbers of events in gazeCode stream equal to slow phases
-            % and fast phases.
-            gv.coding.mark{6}   = gv.coding.mark{5};
-            gv.coding.type{6}   = gv.coding.type{5};
+            % use coding from getCodingData.
+            % TODO: make GUI asking for which stream
+            if 0
+                useStream = 'Hooge & Camps (2013): slow/fast';
+            else
+                useStream = 'Hessels et al. (2019): slow/fast';
+            end
+            idx = find(strcmp(gv.coding.stream.lbls,useStream));
+            assert(~isempty(idx),'stream ''%s'' not found',useStream);
+            assert(numel(idx)==1,'stream ''%s'' found more than once, need a unique stream',useStream);
+            gv.fmark = gv.coding.mark{idx}*1000;
             
-            % set saccades to type 'none' = 1
-            gv.coding.type{6}(gv.coding.type{6} ==4) = 1;
             
+            % make new coding stream for user's output
+            nIdx = length(gv.coding.mark)+1;
+            gv.coding.mark{nIdx}    = gv.coding.mark{idx};
+            gv.coding.type{nIdx}    = gv.coding.type{idx};
+            
+            % set everything not of interest to type 1 ('none')
+            % TODO: make GUI asking for which event
+            gv.coding.type{nIdx}(gv.coding.type{nIdx}~=2) = 1;
             
             % only select data from ts > 0, ts is nulled at onset scene camera! 
             sel = data.eye.binocular.ts >= data.time.startTime & data.eye.binocular.ts <= data.time.endTime;
-             
+            
             gv.datt = data.eye.binocular.ts(sel);
             gv.datx = data.eye.binocular.gp(sel,1);
             gv.daty = data.eye.binocular.gp(sel,2);
             
             gv.datt = gv.datt*1000;
-            gv.datx = gv.datx * gv.wcr(1);
-            gv.daty = gv.daty * gv.wcr(2);
+            gv.datx = gv.datx * data.video.scene.width;
+            gv.daty = gv.daty * data.video.scene.height;
           
         otherwise
             disp('Unknown data type, crashing in 3,2,1,...');
     end
-    % determine start and end times of each fixation in one vector (odd
-    % number start times of fixations even number stop times)
     
-    % The line below determines fixations start and stop times since the
-    % beginning of the recording. For this detection of fixations the algo-
-    % rithm of Hooge and Camps (2013), but this can be replaced by your own
-    % favourite or perhaps more suitable fixation detectioon algorithm.
-    % Important is that this algorithm returns a vector that has fixation
-    % start times at the odd and fixation end times at the even positions
-    % of it.
-    
-    % gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
-    % gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
-    
-    % or use coding from getCodingData.
-    if 0
-        useStream = 'Hooge & Camps (2013): slow/fast';
-    else
-        useStream = 'Hessels et al. (2019): slow/fast';
-    end
-    qStream = strcmp(gv.coding.stream.lbls,useStream);
-    assert(any(qStream),'stream ''%s'' not found',useStream);
-    assert(sum(qStream)==1,'stream ''%s'' found more than once, need a unique stream',useStream);
-    gv.fmark = gv.coding.mark{qStream}*1000;
     
     fixB = gv.fmark(1:2:end)';
     fixE = gv.fmark(2:2:end)';
@@ -587,17 +590,29 @@ if ~skipdataload
       
     % determine begin and end frame beloning to fixations start and end
     % times
-    gv.bfr     = floor(fixB/frdur);
-    gv.efr     = ceil(fixE/frdur);
+    switch gv.datatype
+        case 'Pupil Labs'
+            gv.bfr     = floor(fixB/frdur);
+            gv.efr     = ceil(fixE/frdur);
+        case  'Tobii Pro Glasses'
+            % use frame time info in GlassesViewer's export
+            [gv.bfr,gv.efr] = deal(nan(size(fixB)));
+            for p=1:length(fixB)
+                gv.bfr(p) = find(data.video.scene.fts<=fixB(p)/1000,1,'last');
+                gv.efr(p) = find(data.video.scene.fts<=fixE(p)/1000,1,'last');
+            end
+    end
+    gv.bfr(gv.bfr<1) = 1;
+    gv.bfr(gv.bfr>gv.maxframe) = gv.maxframe;
+    
+    gv.efr(gv.efr<1) = 1;
+    gv.efr(gv.efr>gv.maxframe) = gv.maxframe;
     
     % determine the frame between beginning and end frame for a fixations,
     % this one will be displayed
     gv.mfr = floor((gv.bfr+gv.efr)/2);
-    if gv.mfr(end) > gv.maxframe
-        gv.mfr(end) = gv.maxframe;
-    end
     
-    % neede for marker in scene camera
+    % needed for marker in scene camera
     gv.fixxpos = xmean;
     gv.fixypos = ymean;
     
@@ -607,12 +622,6 @@ if ~skipdataload
     gv.fixxposE = xend;
     gv.fixyposE = yend;
     
-    
-    gv.bfr(gv.bfr<1) = 1;
-    gv.bfr(gv.bfr>nf) = nf;
-    
-    gv.efr(gv.efr<1) = 1;
-    gv.efr(gv.efr>nf) = nf;
     set(hm,'userdata',gv);
 end
 
