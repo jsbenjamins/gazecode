@@ -16,16 +16,16 @@
      SmartGit, which is available free for non-commercial use
 
   2a) Download GazeCode and GlassesViewer in one go using the following command:
-      `git clone --recurse-submodules -j8 git://github.com/foo/bar.git`
+      `git clone --recurse-submodules -j8 git://github.com/jsbenjamins/gazecode.git`
   2b) Should this not work due to your git version being too old, try executing the
       following commands:
-      `git clone git://github.com/foo/bar.git`
-      `cd GazeCode`
+      `git clone git://github.com/jsbenjamins/gazecode.git`
+      `cd gazecode`
       `git submodule update --init --recursive`
   2c) If you prefer to download manually, first download GazeCode and GlassesViewer
-      (available from https://github.com/dcnieho/GlassesViewer). The put the
+      (available from https://github.com/dcnieho/GlassesViewer). Then put the
       GlassesViewer directory inside your GazeCode directory is located (e.g.
-      if `<rootdir>/../gazecode`, then `<rootdir>/../gazecode/GlassesViewer`).
+      if `<rootdir>/..../gazecode`, then `<rootdir>/..../gazecode/GlassesViewer`).
   
   How to use:
   1) Place the GazeCode files in a directory to which you can easily navigate
