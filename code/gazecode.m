@@ -4,8 +4,8 @@ function gazecode(settings)
 %
 % See readme.md for usage details
 %
-% This open-source toolbox has been developed by J.S. Benjamins, R.S. Hessels 
-% and I.T.C. Hooge. When you use it, please cite:
+% This open-source toolbox has been developed by J.S. Benjamins, R.S.
+% Hessels and I.T.C. Hooge. When you use it, please cite:
 %
 % Jeroen S. Benjamins, Roy S. Hessels, and Ignace T. C. Hooge. 2018. 
 % Gazecode: open-source software for manual mapping of mobile eye-tracking 
@@ -20,13 +20,13 @@ function gazecode(settings)
 % the Tobii Pro Glasses 2 eye tracker.
 %
 % For more information, questions, or to check whether we have updated to a
-% better version, e-mail: j.s.benjamins@uu.nl GazeCode is available from 
+% better version, e-mail: j.s.benjamins@uu.nl. GazeCode is available from 
 % www.github.com/jsbenjamins/gazecode and GlassesViewer from
 % https://github.com/dcnieho/glassesviewer
 %
-% Most parts of GazeCode are licensed under the Creative Commons Attribution 
-% 4.0 (CC BY 4.0) license. Some functions are under MIT license, and some 
-% may be under other licenses.
+% Most parts of GazeCode are licensed under the Creative Commons
+% Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT
+% license, and some may be under other licenses.
 %
 % Tested on:
 % Matlab 2017a, 2018b on Mac OSX 10.10.5 and Max OSX 10.14.3
