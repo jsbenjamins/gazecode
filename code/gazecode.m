@@ -769,7 +769,7 @@ switch evt.Key
             labelfix(src,evt);   
         end
     otherwise
-        disp('Unknown key pressed');
+        % disp('Unknown key pressed');
 end
 
 end
