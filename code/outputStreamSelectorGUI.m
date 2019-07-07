@@ -1,4 +1,4 @@
-function [stream,name] = outputStreamSelectorGUI(coding)
+function [stream,name] = outputStreamSelectorGUI(coding,codeStreamIdx)
 
 % can only overwrite/continue GazeCode streams
 % so shows list of selectable GazeCode streams, plus a textbox to write
@@ -53,11 +53,14 @@ selector.UserData.button = uicontrol(...
 for s=1:nRow
     p=nRow-s;
     if p>0
-        lbl = coding.stream.lbls{s};
+        lbl = coding.stream.lbls{streamIdxs(s)};
     else
         lbl = '';
     end
     selector.UserData.streamItems(s)  = uicomponent('Style','radiobutton', 'Parent', selector,'Units','pixels','Position',[3 p*(textSz(4)+2*marginsB(3)) + 2*marginsB(3)+buttonSz(2) 200 20], 'String',lbl,'Value',false, 'Callback',@(src,~) changeEventStream(src,selector));
+    if streamIdxs(s)==codeStreamIdx
+        selector.UserData.streamItems(s).FontWeight = 'bold';
+    end
     if p==0
         selector.UserData.editBox = uicomponent('Style','edit', 'Parent', selector,'Units','pixels','Position',[3+15+marginsB(2) 2*marginsB(3)+buttonSz(2) textBoxSz], 'HorizontalAlignment','left','KeyPressFcn',@(src,~) editBoxCB(src,selector));
     end

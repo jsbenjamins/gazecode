@@ -476,11 +476,14 @@ if ~skipdataload
             % use coding from getCodingData.
             [streamIdx,eventToCode] = streamSelectorGUI(gv.coding);
             assert(~isempty(streamIdx),'You did not select a stream to code, exiting');
-            assert(~isempty(gv.coding.type{streamIdx})&&any(gv.coding.type{streamIdx}==eventToCode),'Selected stream does not contain any events of the selected category. Nothing to code. Exiting.')
+            assert(~isempty(streamIdx)||isfield(coding.settings.streams{streamIdx},'tag') && strcmp(coding.settings.streams{streamIdx}.tag,'gazeCodeStream'),'You did not select an event to code, exiting')
+            if ~isempty(eventToCode)
+                assert(~isempty(gv.coding.type{streamIdx})&&any(gv.coding.type{streamIdx}==eventToCode),'Selected stream does not contain any events of the selected category. Nothing to code. Exiting.')
+            end
             
             
             % ask user where to store coding output
-            [outStreamIdx,newStreamName] = outputStreamSelectorGUI(coding);
+            [outStreamIdx,newStreamName] = outputStreamSelectorGUI(coding,streamIdx);
             assert(~isempty(outStreamIdx),'You did not select a stream for storing coding output, exiting');
             gv.coding.outIdx        = outStreamIdx;
             gv.coding.streamName    = newStreamName;
@@ -571,6 +574,13 @@ if ~skipdataload
     
     gv.data = [fixnr, fixB, fixE, fixD, xstart, ystart, xend, yend, xmean, xsd, ymean, ysd, fixlabel];
     gv.maxfix   = max(fixnr);
+    
+    if outStreamIdx==streamIdx  % TODO: this is specific to Tobii code...
+        % when loading existing file, put already coded labels into gv.data
+        qWhich = gv.coding.type{gv.coding.outIdx}>1;
+        assert(sum(qWhich)==size(gv.data,1),'internal error contact developer')
+        gv.data(:,end) = log2(gv.coding.type{gv.coding.outIdx}(qWhich))-1;
+    end
     
     set(hm,'userdata',gv);
     disp('... done');

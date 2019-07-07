@@ -15,7 +15,7 @@ qGazeCodeStream = cellfun(@(x) isfield(x,'tag') && strcmp(x.tag,'gazeCodeStream'
 qGazeCodeStream(~coding.stream.available) = [];
 % get names of code categories for each stream
 names(~qGazeCodeStream) = arrayfun(@(x)getCodeCategories(coding,x),find(~qGazeCodeStream),'uni',false);
-[names{qGazeCodeStream}]= deal({'This stream was created with GazeCode, select it to modify or review it'});
+[names{qGazeCodeStream}]= deal({'This is a GazeCode stream, no need to select anything here to modify or review it'});
 % get number of characters in longest stream label
 nCharS = max(cellfun(@length,coding.stream.lbls));
 % get number of characters for each code category label
@@ -110,7 +110,7 @@ if selector.UserData.streamPanelItems(qSel).Value
     names = selector.UserData.catNames{qSel};
     for s=1:length(names)
         p=selector.UserData.nCodeCatMax-s;
-        selector.UserData.catPanelItems(s)  = uicomponent('Style','radiobutton', 'Parent', selector.UserData.catPanel,'Units','pixels','Position',[3 p*(selector.UserData.relExt(4)+2*selector.UserData.marginsB(3)) + selector.UserData.marginsB(3) 200 20], 'String',names{s},'Value',false, 'Callback',@(src,~) changeEventCat(src,selector));
+        selector.UserData.catPanelItems(s)  = uicomponent('Style','radiobutton', 'Parent', selector.UserData.catPanel,'Units','pixels','Position',[3 p*(selector.UserData.relExt(4)+2*selector.UserData.marginsB(3)) + selector.UserData.marginsB(3) selector.UserData.relExt(3) 20], 'String',names{s},'Value',false, 'Callback',@(src,~) changeEventCat(src,selector));
     end
 end
 end
