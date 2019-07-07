@@ -6,7 +6,8 @@
   and the data of a mobile eye-tracking measurement, runs a fixation
   detection algorithm (adaptation of Hooge and Camps, 2013, Frontiers in Psychology, 4,
   996) and offers a simple to use interface to browse through and
-  categorise the detected fixations. This version is integrated with GlassesViewer to
+  categorise the detected fixations. This version is integrated with
+  [GlassesViewer](https://github.com/dcnieho/GlassesViewer) to
   enable directly opening Tobii Pro Glasses 2 recordings as stored on the recording
   unit's SD card. As such, GlassesViewer needs to be available to GazeCode.
   The recommended way to make this work is to use the `git` tool to download GazeCode.
