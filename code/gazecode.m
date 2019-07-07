@@ -804,9 +804,9 @@ try
                 if gv.coding.outIdx>sum(gv.coding.stream.available)
                     str = getCodingStreamSetup(gv.coding.streamName);
                     gv.coding.settings.streams = [gv.coding.settings.streams; str];
+                    % 2. add also to coding.stream.available
+                    gv.coding.stream.available = [gv.coding.stream.available true];
                 end
-                % 2. add to coding.stream.available
-                gv.coding.stream.available = [gv.coding.stream.available true];
                 % 3. mark and type are already good, we're ready to save
                 coding = rmfield(gv.coding,{'outIdx','streamName'});
                 save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
