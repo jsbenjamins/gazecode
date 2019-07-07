@@ -642,8 +642,8 @@ end
 data = gv.data;
 data(gv.curfix,end) = categorie;
 % put categorie also in coding struct, note that categories are power of 2,
-% and that 1 is "other". categorie 2 should correspond to code 2
-% ("uncoded"), so categorie+1 below
+% and that 1 is "other". categorie 0 ("uncoded") should correspond to code
+% 2, categorie 1 to code 4, etc, so categorie+1 below
 qWhich = gv.coding.mark{gv.coding.outIdx}==gv.fmark(2*gv.curfix-1)/1000;
 assert(sum(qWhich)==1,'Internal error, contact developer')
 gv.coding.type{gv.coding.outIdx}(qWhich) = 2^(categorie+1);
