@@ -644,7 +644,9 @@ data(gv.curfix,end) = categorie;
 % put categorie also in coding struct, note that categories are power of 2,
 % and that 1 is "other". categorie 2 should correspond to code 2
 % ("uncoded"), so categorie+1 below
-gv.coding.type{gv.coding.outIdx}(2*gv.curfix-1) = 2^(categorie+1);
+qWhich = gv.coding.mark{gv.coding.outIdx}==gv.fmark(2*gv.curfix-1)/1000;
+assert(sum(qWhich)==1,'Internal error, contact developer')
+gv.coding.type{gv.coding.outIdx}(qWhich) = 2^(categorie+1);
 gv.data = data;
 setlabel(gv);
 
@@ -727,8 +729,6 @@ end
 % function to handle keypresses as shortcuts, function of main screen
 function verwerkknop(src,evt)
 gv = get(src,'userdata');
-tsrc = get(src,'Children');
-% Simplified as per suggestion of D.C. Niehorster on 2018-03-29
 switch evt.Key
      case gv.fwdbut
         playforward(findobj('UserData',gv.fwdbut),evt);
