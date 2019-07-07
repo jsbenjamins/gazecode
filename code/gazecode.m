@@ -230,8 +230,7 @@ end
 
 
 %% init main screen, don't change this section if you're not sure what you are doing
-hm          = figure(1);
-set(hm,'Name','GazeCode','NumberTitle','off');
+hm          = figure('Name','GazeCode','NumberTitle','off','Visible','off');
 hmmar       = [150 100];
 
 set(hm, 'Units', 'pixels');
@@ -615,6 +614,7 @@ end
 
 %% start to show the first frame or when reloading the frame last coded.
 showmainfr(hm,gv);
+set(hm,'Visible','on');
 
 end
 
@@ -667,8 +667,6 @@ hold(gv.frameas,'on');
 stip = scatter(gv.fixxpos(gv.curfix),gv.fixypos(gv.curfix),1000,'ro');
 set(stip,'MarkerEdgeColor',[0 0.85 1],'MarkerFaceAlpha',.65,'MarkerFaceColor',[0 0.85 1],'LineWidth',2);
 
-
-% clc;
 
 hold(gv.frameas,'off');
 setlabel(gv);
