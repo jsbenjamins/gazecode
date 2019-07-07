@@ -476,7 +476,9 @@ if ~skipdataload
             % use coding from getCodingData.
             [streamIdx,eventToCode] = streamSelectorGUI(gv.coding);
             assert(~isempty(streamIdx),'You did not select a stream to code, exiting');
-            assert(~isempty(streamIdx)||isfield(coding.settings.streams{streamIdx},'tag') && strcmp(coding.settings.streams{streamIdx}.tag,'gazeCodeStream'),'You did not select an event to code, exiting')
+            streams = find(coding.stream.available);
+            qGazeCodeStream = isfield(coding.settings.streams{streams(streamIdx)},'tag') && strcmp(coding.settings.streams{streams(streamIdx)}.tag,'gazeCodeStream');
+            assert(~isempty(streamIdx)||qGazeCodeStream,'You did not select an event to code, exiting')
             if ~isempty(eventToCode)
                 assert(~isempty(gv.coding.type{streamIdx})&&any(gv.coding.type{streamIdx}==eventToCode),'Selected stream does not contain any events of the selected category. Nothing to code. Exiting.')
             end
@@ -488,15 +490,15 @@ if ~skipdataload
             gv.coding.outIdx        = outStreamIdx;
             gv.coding.streamName    = newStreamName;
             % make new coding stream for user's output if wanted
-            if ~isempty(newStreamName)
-                assert(gv.coding.outIdx==length(gv.coding.mark)+1,'internal error, contact developer')
+            if outStreamIdx~=streamIdx
+                assert(isempty(newStreamName) || gv.coding.outIdx==length(gv.coding.mark)+1,'internal error, contact developer')
                 gv.coding.mark{gv.coding.outIdx}    = gv.coding.mark{streamIdx};
                 gv.coding.type{gv.coding.outIdx}    = gv.coding.type{streamIdx};
             end
             
             % prep output stream, if not loading and editing existing
-            % stream
-            if outStreamIdx~=streamIdx
+            % stream or copying a GazeCode stream
+            if outStreamIdx~=streamIdx && ~qGazeCodeStream
                 % set everything not of interest to type 1 ('other')
                 gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}~=eventToCode) = 1;
                 % set everything of interest to type 2 ('uncoded')
@@ -521,7 +523,7 @@ if ~skipdataload
             
             % get start and end marks of those events the user wanted to
             % code
-            if outStreamIdx~=streamIdx
+            if outStreamIdx~=streamIdx && ~qGazeCodeStream
                 qEvents = gv.coding.type{gv.coding.outIdx}==2;
             else
                 % include also already coded events, since we are reloading
@@ -575,7 +577,7 @@ if ~skipdataload
     gv.data = [fixnr, fixB, fixE, fixD, xstart, ystart, xend, yend, xmean, xsd, ymean, ysd, fixlabel];
     gv.maxfix   = max(fixnr);
     
-    if outStreamIdx==streamIdx  % TODO: this is specific to Tobii code...
+    if outStreamIdx==streamIdx || qGazeCodeStream  % TODO: this is specific to Tobii code...
         % when loading existing file, put already coded labels into gv.data
         qWhich = gv.coding.type{gv.coding.outIdx}>1;
         assert(sum(qWhich)==size(gv.data,1),'internal error contact developer')
