@@ -482,11 +482,11 @@ if ~skipdataload
             % ask user where to store coding output
             [outStreamIdx,newStreamName] = outputStreamSelectorGUI(coding);
             assert(~isempty(outStreamIdx),'You did not select a stream for storing coding output, exiting');
-            gv.coding.outIdx    = outStreamIdx;
+            gv.coding.outIdx        = outStreamIdx;
+            gv.coding.streamName    = newStreamName;
             % make new coding stream for user's output if wanted
             if ~isempty(newStreamName)
                 assert(gv.coding.outIdx==length(gv.coding.mark)+1,'internal error, contact developer')
-                gv.coding.streamName = newStreamName;
                 gv.coding.mark{gv.coding.outIdx}    = gv.coding.mark{streamIdx};
                 gv.coding.type{gv.coding.outIdx}    = gv.coding.type{streamIdx};
             end
@@ -801,16 +801,20 @@ try
                 fclose(fid);
                 % also store to coding.mat
                 % 1. add stream to settings, if needed
-                getCodingStreamSetup(gv.coding.streamName);
+                if gv.coding.outIdx>sum(gv.coding.stream.available)
+                    str = getCodingStreamSetup(gv.coding.streamName);
+                    gv.coding.settings.streams = [gv.coding.settings.streams; str];
+                end
                 % 2. add to coding.stream.available
+                gv.coding.stream.available = [gv.coding.stream.available true];
                 % 3. mark and type are already good, we're ready to save
-                coding = gv.coding;
+                coding = rmfield(gv.coding,{'outIdx','streamName'});
                 save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
         end
         
         set(src,'closerequestfcn','closereq');
         rmpath(genpath(gv.rootdir));
-        close(src);
+        delete(src);
     else
         disp('Program not closed. Continuing.');
     end
