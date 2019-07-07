@@ -472,39 +472,64 @@ if ~skipdataload
             data.ui.haveEyeVideo = isfield(data.video,'eye');
             coding              = getCodingData(gv.foldnaam, '', settings.coding, data);
             coding.dataIsCrap   = dataIsCrap;
-            coding.fileOrClass  = ismember(lower(coding.stream.type),{'classifier','filestream'});
             gv.coding           = coding;
             
             % use coding from getCodingData.
-            % TODO: make GUI asking for which stream
-            if 0
-                useStream = 'Hooge & Camps (2013): slow/fast';
-            else
-                useStream = 'Hessels et al. (2019): slow/fast';
+            [streamIdx,eventToCode] = streamSelectorGUI(gv.coding);
+            assert(~isempty(streamIdx),'You did not select a stream to code, exiting');
+            assert(~isempty(gv.coding.type{streamIdx})&&any(gv.coding.type{streamIdx}==eventToCode),'Selected stream does not contain any events of the selected category. Nothing to code. Exiting.')
+            
+            
+            % ask user where to store coding output
+            [outStreamIdx,newStreamName] = outputStreamSelectorGUI(coding);
+            assert(~isempty(outStreamIdx),'You did not select a stream for storing coding output, exiting');
+            gv.coding.outIdx    = outStreamIdx;
+            % make new coding stream for user's output if wanted
+            if ~isempty(newStreamName)
+                assert(gv.coding.outIdx==length(gv.coding.mark)+1,'internal error, contact developer')
+                gv.coding.streamName = newStreamName;
+                gv.coding.mark{gv.coding.outIdx}    = gv.coding.mark{streamIdx};
+                gv.coding.type{gv.coding.outIdx}    = gv.coding.type{streamIdx};
             end
-            idx = find(strcmp(gv.coding.stream.lbls,useStream));
-            assert(~isempty(idx),'stream ''%s'' not found',useStream);
-            assert(numel(idx)==1,'stream ''%s'' found more than once, need a unique stream',useStream);
-            gv.fmark = gv.coding.mark{idx}*1000;
             
+            % prep output stream, if not loading and editing existing
+            % stream
+            if outStreamIdx~=streamIdx
+                % set everything not of interest to type 1 ('other')
+                gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}~=eventToCode) = 1;
+                % set everything of interest to type 2 ('uncoded')
+                gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}==eventToCode) = 2;
+                % merge adjacent, coding should not contain consecutive
+                % same events
+                iAdj = find(diff(gv.coding.type{gv.coding.outIdx})==0);
+                i=length(iAdj);
+                while i>0
+                    % find start and end of run of adjacent events
+                    e = iAdj(i)+1;
+                    s = iAdj(i);
+                    while i>1&&iAdj(i-1)==s-1
+                        i = i-1;
+                        s = iAdj(i);
+                    end
+                    gv.coding.mark{gv.coding.outIdx}(s+1:e) = [];
+                    gv.coding.type{gv.coding.outIdx}(s+1:e) = [];
+                    i=i-1;
+                end
+            end
             
-            % make new coding stream for user's output
-            % TODO: user should be able to select a stream to continue with
-            % (auto-detect which streams are gazecode streams, show in
-            % separate section of stream selection GUI: either code events
-            % in one of these streams, or continue with one of the below
-            % gazecode streams). If user selects a stream to code, they can
-            % select a current stream to overwrite, or select to add a new
-            % stream.
-            gv.coding.outIdx    = length(gv.coding.mark)+1;
-            gv.coding.streamName= 'GazeCode output';    % TODO: add name of coded event?
-            gv.coding.mark{gv.coding.outIdx}    = gv.coding.mark{idx};
-            gv.coding.type{gv.coding.outIdx}    = gv.coding.type{idx};
-            
-            % set everything not of interest to type 1 ('other')
-            % TODO: make GUI asking for which event
-            eventToCode = 2;
-            gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}~=eventToCode) = 1;
+            % get start and end marks of those events the user wanted to
+            % code
+            if outStreamIdx~=streamIdx
+                qEvents = gv.coding.type{gv.coding.outIdx}==2;
+            else
+                % include also already coded events, since we are reloading
+                % GazeCode session
+                qEvents = gv.coding.type{gv.coding.outIdx}>=2;
+            end
+            % fmark should contain start and end of each event to code, one
+            % after the other
+            iEvents = find(qEvents);
+            gv.fmark = reshape([gv.coding.mark{gv.coding.outIdx}(iEvents); gv.coding.mark{gv.coding.outIdx}(iEvents+1)]*1000,1,[]);  % s->ms
             
             % only select data from ts > 0, ts is nulled at onset scene camera! 
             sel = data.eye.binocular.ts >= data.time.startTime & data.eye.binocular.ts <= data.time.endTime;
@@ -558,7 +583,7 @@ if ~skipdataload
             gv.bfr     = floor(fixB/frdur);
             gv.efr     = ceil(fixE/frdur);
         case  'Tobii Pro Glasses'
-            % use frame time info in GlassesViewer's export
+            % use frame time info from GlassesViewer's export
             [gv.bfr,gv.efr] = deal(nan(size(fixB)));
             for p=1:length(fixB)
                 gv.bfr(p) = find(data.video.scene.fts<=fixB(p)/1000,1,'last');
