@@ -10,22 +10,28 @@
   enable directly opening Tobii Pro Glasses 2 recordings as stored on the recording
   unit's SD card. As such, GlassesViewer needs to be available to GazeCode.
   The recommended way to make this work is to use the `git` tool to download GazeCode.
-  Do as follows:
-  1) install git from https://git-scm.org if you don't already have it. If you do not
-     like using the command line/terminal, consider using a graphical git tool such as
-     SmartGit, which is available free for non-commercial use
-
-  2a) Download GazeCode and GlassesViewer in one go using the following command:
+  Alternatively you can download GazeCode's components separately and place them in the
+  right locations. Here are instructions for these two routes:
+  1. Using Git
+      1. install git from https://git-scm.org if you don't already have it. If you do not
+       like using the command line/terminal, consider using a graphical git tool such as
+       SmartGit, which is available free for non-commercial use
+      1. Download GazeCode and GlassesViewer in one go using the following command:
       `git clone --recurse-submodules -j8 git://github.com/jsbenjamins/gazecode.git`
-  2b) Should this not work due to your git version being too old, try executing the
-      following commands:
-      `git clone git://github.com/jsbenjamins/gazecode.git`
-      `cd gazecode`
-      `git submodule update --init --recursive`
-  2c) If you prefer to download manually, first download GazeCode and GlassesViewer
-      (available from https://github.com/dcnieho/GlassesViewer). Then put the
-      GlassesViewer directory inside your GazeCode directory is located (e.g.
-      if `<rootdir>/..../gazecode`, then `<rootdir>/..../gazecode/GlassesViewer`).
+      1. Should this not work due to your git version being too old, try executing the
+       following commands:
+       ```
+       git clone git://github.com/jsbenjamins/gazecode.git
+       cd gazecode
+       git submodule update --init --recursive
+       ```
+       If you have already cloned Titta but do not have the MatlabWebSocket submodule populated yet,
+       issuing the `git submodule update --init --recursive` command will take care of that.
+  1. Manual download:
+      1. First download GazeCode and place it, unzipped if necessary, in your preferred folder.
+      1. Then download GlassesViewer (available from https://github.com/dcnieho/GlassesViewer).
+      1. Put the GlassesViewer directory inside GazeCode at the right location:
+      `<GazeCode_RootDir>/GlassesViewer`).
   
   How to use:
   1) Place the GazeCode files in a directory to which you can easily navigate
