@@ -221,7 +221,7 @@ hmmar       = [150 100];
 
 set(hm, 'Units', 'pixels');
 ws          = truescreensize();
-ws          = [1 1 ws ];
+ws          = [1 1 ws];
 
 % set figure full screen, position is bottom left width height!;
 set(hm,'Position',[ws(1) + hmmar(1), ws(2) + hmmar(2), ws(3)-2*hmmar(1), ws(4)-2*hmmar(2)]);
@@ -230,9 +230,6 @@ set(hm,'windowkeypressfcn',@verwerkknop,'closerequestfcn',@sluitaf,'userdata',gv
 
 % get coordinates main screen
 hmpos       = get(hm,'Position');
-
-hmxc        = hmpos(3)/2;
-hmyc        = hmpos(4)/2;
 
 hmxmax      = hmpos(3);
 hmymax      = hmpos(4);
@@ -249,61 +246,66 @@ mm1         = uimenu(hm,'Label','Menu');
 sm0         = uimenu(mm1,'Label','Save to text','CallBack',@savetotext);
 sm1         = uimenu(mm1,'Label','About GazeCode','CallBack','uiwait(msgbox(''This is version 1.0.1'',''About FixLabel''))');
 
-%% left panel (Child 2 of hm), don't change this section if you're not sure what you are doing 
+% first get sizes of panels
+pmar        = [50 20];
+knopsizeL 	= [100 100];
+knopsizeR   = [150 150];
+knopmar     = [20 10];
+panelWidth(1) = (hmxmax/2)-2*pmar(1);
+panelWidth(2) = knopsizeR(1)*3+knopmar(1)*4;
+% position them
+leftoverSpace = hmxmax - sum(panelWidth);
+pmarhn        = leftoverSpace/3;
+
+%% left panel (Child 2 of hm), don't change this section if you're not sure what you are doing
+
 lp          = uipanel(hm,'Title','Fix Playback/Lookup','Units','pixels','FontSize',16,'BackgroundColor',[0.8 0.8 0.8]);
-lpmar       = [50 20];
 gv.lp       = lp;
 
-set(lp,'Position',[1+lpmar(1) 1+lpmar(2) (hmxmax/2)-2*lpmar(1) hmymax-2*lpmar(2)]);
+set(lp,'Position',[1+pmarhn 1+pmar(2) panelWidth(1) hmymax-2*pmar(2)]);
 lpsize = get(lp,'Position');
 lpsize = lpsize(3:end);
 
 
-knopsize = [100 100];
-knopmar = [20 10];
 
 fwknop = uicontrol(lp,'Style','pushbutton','string','>>','callback',@playforward,'userdata',gv.fwdbut);
-set(fwknop,'position',[lpsize(1)-knopsize(1)-knopmar(1) knopmar(2) knopsize]);
+set(fwknop,'position',[lpsize(1)-knopsizeL(1)-knopmar(1) knopmar(2) knopsizeL]);
 % set(fwknop,'backgroundcolor',[1 0.5 0]);
 set(fwknop,'fontsize',20);
 
 bkknop = uicontrol(lp,'Style','pushbutton','string','<<','callback',@playback,'userdata',gv.bckbut);
-set(bkknop,'position',[knopmar knopsize]);
+set(bkknop,'position',[knopmar knopsizeL]);
 % set(bkknop,'backgroundcolor',[1 0.5 0]);
 set(bkknop,'fontsize',20);
 
 %% right panel (child 1 of hm), don't change this section if you're not sure what you are doing
 rp          = uipanel('Title','Categories','Units','pixels','FontSize',16,'BackgroundColor',[0.8 0.8 0.8]);
-rpmar       = [50 20];
 
-set(rp,'Position',[hmxc+rpmar(1) 1+rpmar(2) (hmxmax/2)-2*rpmar(1) hmymax-2*rpmar(2)]);
+set(rp,'Position',[pmarhn*2+panelWidth(1) 1+pmar(2) panelWidth(2) hmymax-2*pmar(2)]);
 rpsize      = get(rp,'Position');
 rpsize      = rpsize(3:end);
 
 % right panel buttons
-knopsize    = [150 150];
-knopmar     = [20];
-
 % make grid
-widthgrid   = knopsize(1)*3+2*knopmar;
-heightgrid  = knopsize(2)*3+2*knopmar;
+widthgrid   = knopsizeR(1)*3+2*knopmar(1);
+heightgrid  = knopsizeR(2)*3+2*knopmar(1);
 xstartgrid    = floor((rpsize(1) - widthgrid)/2);
-ystartgrid  = rpsize(2) - heightgrid - knopmar;
+ystartgrid  = rpsize(2) - heightgrid - knopmar(1);
 
-opzij       = knopmar+knopsize(1);
-omhoog      = knopmar+knopsize(2);
+opzij       = knopmar(1)+knopsizeR(1);
+omhoog      = knopmar(1)+knopsizeR(2);
 gridpos     = [...
-    xstartgrid, ystartgrid, knopsize;...
-    xstartgrid+opzij, ystartgrid, knopsize;...
-    xstartgrid+2*opzij, ystartgrid, knopsize;...
+    xstartgrid, ystartgrid, knopsizeR;...
+    xstartgrid+opzij, ystartgrid, knopsizeR;...
+    xstartgrid+2*opzij, ystartgrid, knopsizeR;...
     
-    xstartgrid ystartgrid+omhoog knopsize;...
-    xstartgrid+opzij ystartgrid+omhoog knopsize;...
-    xstartgrid+2*opzij ystartgrid+omhoog knopsize;...
+    xstartgrid ystartgrid+omhoog knopsizeR;...
+    xstartgrid+opzij ystartgrid+omhoog knopsizeR;...
+    xstartgrid+2*opzij ystartgrid+omhoog knopsizeR;...
     
-    xstartgrid ystartgrid+2*omhoog knopsize;...
-    xstartgrid+opzij ystartgrid+2*omhoog knopsize;...
-    xstartgrid+2*opzij ystartgrid+2*omhoog knopsize;...
+    xstartgrid ystartgrid+2*omhoog knopsizeR;...
+    xstartgrid+opzij ystartgrid+2*omhoog knopsizeR;...
+    xstartgrid+2*opzij ystartgrid+2*omhoog knopsizeR;...
     ];
 
 gv.knoppen = [];
