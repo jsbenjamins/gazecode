@@ -127,7 +127,8 @@ close(gv.splashh);
 
 % this is now a question dialog, but needs to be changed to a dropdown for
 % more options. Question dialog allows for only three options
-gv.datatype = questdlg(['What type of of mobile eye-tracking data do you want to code?'],'Data type?','Pupil Labs','Tobii Pro Glasses 2','Pupil Labs');
+gv.datatype = questdlg(['What type of mobile eye-tracking data do you want to code?'],'Data type?','Pupil Labs','Tobii Pro Glasses 2','Pupil Labs');
+assert(~isempty(gv.datatype),'You did not select a type of mobile eye-tracking data, exiting');
 
 % set camera settings of eye-tracker data
 switch gv.datatype
