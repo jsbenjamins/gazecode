@@ -38,19 +38,27 @@
   1) Place the GazeCode files in a directory to which you can easily navigate
   in Matlab
   
-  2a) When using Pupil-labs data:
-    1) Export both a visualisation video of raw mobile eye-tracking data and
+  2) Prepare the data you want to analyze:
+      1. When using Pupil-labs data:
+          1. Export both a visualisation video of raw mobile eye-tracking data and
        the data itself.
-
-    2) Put the video file and the data file in the data folder of GazeCode
+          1. Put the video file and the data file in the data folder of GazeCode
     (demo data are available at http://tinyurl.com/gazecodedemodata for Pupil-labs)
 
-  2b) Tobii Pro Glasses 2 recordings as stored on its SD card can be directly
+      1. Tobii Pro Glasses 2 recordings as stored on its SD card can be directly
       loaded with GazeCode by making use of functionality provided by
-      GlassesViewer.
+      [GlassesViewer](https://github.com/dcnieho/GlassesViewer).
      (demo data for Tobii Glasses are included in this repository)
+         1. [GlassesViewer](https://github.com/dcnieho/GlassesViewer) allows to
+         manually label events in the eye-tracking data or other data streams
+         provided by the Tobii Pro Glasses 2 to be coded manually, or for algorithmic
+         coding to be manually adjusted. GlassesViewer can also be used to simply
+         view the labeled events. One of these labeled events can then be selected
+         when opening a recording in GazeCode. See [GlassesViewer's
+         manual](https://github.com/dcnieho/GlassesViewer/blob/master/manual.md) for
+         the complete workflow.
   
-  3) Find a set of nine 100 x 100 non-transparant PNGs reflecting the
+  3) Find a set of nine 100 x 100 non-transparant PNGs (images) reflecting the
   different categories you want to use (thenounproject.com is good place to
   start). Use white empty PNGs if you have less than 9 categories. Put
   these files in the categories folder of GazeCode.
@@ -81,7 +89,8 @@
   Applications (ETRA '18). ACM, New York, NY, USA, Article 54, 4 pages. 
   DOI: https://doi.org/10.1145/3204493.3204568
 
-  For importing data from Tobii Glasses 2, it uses GlassesViewer. When
+  For importing data from Tobii Glasses 2, it uses
+  [GlassesViewer](https://github.com/dcnieho/GlassesViewer). When
   using this toolbox with Tobii Glasses data, please also cite 
   Niehorster, D.C., Hessels, R.S., and Benjamins, J.S. (in prep).
   GlassesViewer: Open-source software for viewing and analyzing data from
