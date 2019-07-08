@@ -1,50 +1,11 @@
 function gazecode(settings)
 
 % GazeCode (beta version)
-% 
-% This software allows for fast and flexible manual classification of any
-% mobile eye-tracking data. Currently Pupil Labs and Tobii Pro Glasses data 
-% are supported. The software loads an exported visualisation (video file) 
-% and the data of a mobile eye-tracking measurement, runs a fixation
-% detection algorithm (Hooge and  Camps, 2013, Frontiers in Psychology, 4,
-% 996) and offers a simple to use interface to browse through and
-% categorise the detected fixations.
-% 
-% How to use:
-% 1) Place the GazeCode files in a directory to which you can navigate easily
-% in Matlab
-% 
-% 2) Export both a visualisation video of raw mobile eye-tracking data and
-% the data itself. For Tobii Pro Lab recordings  this is nog longer necessary, 
-% the content of the SD card can simply be used!
-% (demo data is available at http://tinyurl.com/gazecodedemodata)
-% 
-% 3) Put the video file and the data file in the data folder of GazeCode
-% 
-% 4) Find a set of nine 100 x 100 non-transparant PNGs reflecting the
-% different categories you want to use (thenounproject.com is good place to
-% start). Use white empty PNGs if you have less than 9 categories. Put
-% these files in the categories folder of GazeCode.
-% 
-% 5) In Matlab set the working directory to the code folder of GazeCode and 
-% type gazecode in the Matlab command window to start GazeCode.
-% 
-% 6) When prompted, point GazeCode to the category set, files and folders it
-% requests.
-% 
-% 7) Browse through the detected fixations using the arrow buttons (or Z
-% and X keys on the keyboard) in the left panel of GazeCode.
-% 
-% 8) Assign a category to a fixation by using the category buttons in the
-% right panel of GazeCode or use (numpad) keyboard keys 1-9. Category
-% buttons are numbered left-to-right, bottom-to-top (analogue to the
-% keyboard numpad). Numpad 0 resets a category.
-% 
-% 9) Category codes of fixations can be exported to a file using the Save
-% option in the menu of GazeCode.
-% 
-% This open-source toolbox has been developed by J.S. Benjamins, R.S. Hessels 
-% and I.T.C. Hooge. When you use it, please cite:
+%
+% See readme.md for usage details
+%
+% This open-source toolbox has been developed by J.S. Benjamins, R.S.
+% Hessels and I.T.C. Hooge. When you use it, please cite:
 %
 % Jeroen S. Benjamins, Roy S. Hessels, and Ignace T. C. Hooge. 2018. 
 % Gazecode: open-source software for manual mapping of mobile eye-tracking 
@@ -52,19 +13,25 @@ function gazecode(settings)
 % Applications (ETRA '18). ACM, New York, NY, USA, Article 54, 4 pages. 
 % DOI: https://doi.org/10.1145/3204493.3204568
 %
+% For importing data from Tobii Glasses 2, it uses GlassesViewer. When
+% using this toolbox with Tobii Glasses data, please also cite 
+% Niehorster, D.C., Hessels, R.S., and Benjamins, J.S. (in prep).
+% GlassesViewer: Open-source software for viewing and analyzing data from
+% the Tobii Pro Glasses 2 eye tracker.
+%
 % For more information, questions, or to check whether we have updated to a
-% better version, e-mail: j.s.benjamins@uu.nl GazeCode is available from 
-% www.github.com/jsbenjamins/gazecode
+% better version, e-mail: j.s.benjamins@uu.nl. GazeCode is available from 
+% www.github.com/jsbenjamins/gazecode and GlassesViewer from
+% https://github.com/dcnieho/glassesviewer
 %
-% Most parts of GazeCode are licensed under the Creative Commons Attribution 
-% 4.0 (CC BY 4.0) license. Some functions are under MIT license, and some 
-% may be under other licenses.
+% Most parts of GazeCode are licensed under the Creative Commons
+% Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT
+% license, and some may be under other licenses.
 %
-% Tested on
-%
-% Matlab 2014a, 2017a, 2018b on Mac OSX 10.10.5 and Max OSX 10.14.3
-% Matlab 2013a on Windows 7 Enterprise, Service Pack 1
+% Tested on:
+% Matlab 2017a, 2018b on Mac OSX 10.10.5 and Max OSX 10.14.3
 % Matlab 2016a, 2018a on Windows 10
+
 %% start fresh
 clear all; close all; clc;
 qDEBUG = true;
@@ -110,8 +77,6 @@ gv.cat9but = {'9','numpad9'};
 gv.cat0but = {'0','numpad0'};
 
 %% directories and settings
-gv.foldnaam     = 0;
-gv.catfoldnaam  = 0;
 gv.fs           = filesep;
 gv.codedir      = cd; cd ..;
 gv.rootdir      = cd;
@@ -148,7 +113,7 @@ if nargin<1 || isempty(settings)
     if ~isempty(which('matlab.internal.webservices.fromJSON'))
         jsondecoder = @matlab.internal.webservices.fromJSON;
     elseif ~isempty(which('jsondecode'))
-        jsondecoder = @matlab.internal.webservices.fromJSON;
+        jsondecoder = @jsondecode;
     else
         error('Your MATLAB version does not provide a way to decode json (which means its really old), upgrade to something newer');
     end
@@ -162,42 +127,30 @@ close(gv.splashh);
 
 % this is now a question dialog, but needs to be changed to a dropdown for
 % more options. Question dialog allows for only three options
-gv.datatype = questdlg(['What type of of mobile eye-tracking data do you want to code?'],'Data type?','Pupil Labs','Tobii Pro Glasses','Pupil Labs');
-
-% if strcmp(gv.datatype,'Tobii Pro Glasses')
-%     help dispTobiiInstructions;
-%     dispTobiiInstructions;
-%     clc;
-%     TobiiOK = questdlg(['Did you place the video file and the data file from Tobii in the data folder of GazeCode?'],'Are the Tobii files in the right location?','Yes, continue','No & quit','Yes, continue');
-%     if strcmp(TobiiOK,'No & quit')
-%         disp('GazeCode quit, since you indicated not having put the Tobii files in the right location.')
-%         return
-%     end
-% end
+gv.datatype = questdlg(['What type of mobile eye-tracking data do you want to code?'],'Data type?','Pupil Labs','Tobii Pro Glasses 2','Pupil Labs');
+assert(~isempty(gv.datatype),'You did not select a type of mobile eye-tracking data, exiting');
 
 % set camera settings of eye-tracker data
 switch gv.datatype
     case 'Pupil Labs'
         gv.wcr = [1280 720]; % world cam resolution
         gv.ecr = [640 480]; % eye cam resolution
-    case 'Tobii Pro Glasses'
-        gv.wcr = [1920 1080]; % world cam resolution
-        gv.ecr = [640 480]; % eye cam resolution (assumption, not known ATM)
+    case 'Tobii Pro Glasses 2'
+        % this is in glassesViewer's export, at
+        % data.video.scene.width, data.video.scene.height
+        % data.video.eye.width, data.video.eye.height
 end
 
 %%
-while gv.catfoldnaam == 0
-    gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
-end
+gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
+assert(ischar(gv.catfoldnaam),'You did not select a categories directory, exiting');
 
 %% load data folder
 switch gv.datatype
     case 'Pupil Labs'
-        while gv.foldnaam == 0
-            gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
-        end
+        gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
+        assert(ischar(gv.foldnaam),'You did not select a data directory, exiting');
         
-            
         filmnaam    = strsplit(gv.foldnaam,gv.fs);
         gv.filmnaam    = filmnaam{end};
         
@@ -219,11 +172,13 @@ switch gv.datatype
         else
             % do nothing
         end
-    case 'Tobii Pro Glasses'
+    case 'Tobii Pro Glasses 2'
         % do the selecor thing
         selectedDir = uigetdir(gv.datadir,'Select projects directory of SD card');
+        assert(ischar(selectedDir),'You did not select a data directory, exiting');
         
         if exist(fullfile(selectedDir,'segments'),'dir') && exist(fullfile(selectedDir,'recording.json'),'file')
+            % user selected what is very likely a recording's dir directly
             recordingDir = selectedDir;
         else
             % assume this is a project dir. G2ProjectParser will fail if it is not
@@ -242,7 +197,7 @@ switch gv.datatype
         gv.foldnaam = recordingDir;
         
         filmnaam    = fullfile(gv.foldnaam,'segments','1','fullstream.mp4');
-        gv.filmnaam    = filmnaam;
+        gv.filmnaam = filmnaam;
         
         fid = fopen(fullfile(gv.foldnaam,'recording.json'),'rt');
         recording = jsondecoder(fread(fid,inf,'*char').');
@@ -252,24 +207,6 @@ switch gv.datatype
         participant = jsondecoder(fread(fid,inf,'*char').');
         gv.partName = participant.pa_info.Name;
         fclose(fid);
-        resdir = fullfile(gv.resdir,gv.partName,gv.recName);
-        
-        if exist(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName, '.mat'])) > 0
-            oudofnieuw = questdlg(['There already is a results directory with a file for ',gv.filmnaam,'. Do you want to load previous results or start over? Starting over will overwrite previous results.'],'Folder already labeled?','Load previous','Start over','Load previous');
-            if strcmp(oudofnieuw,'Load previous')
-                % IMPORANT NOTE FOR TESTING! This reloads gv! Use start over when
-                % making changes to this file.
-                load(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName, '.mat']));
-                skipdataload = true;
-            else
-                rmdir(resdir,'s');
-                mkdir(resdir);
-            end
-        elseif exist(resdir) == 0
-            mkdir(resdir);
-        else
-            % do nothing
-        end
 end
 
 
@@ -279,13 +216,12 @@ end
 
 
 %% init main screen, don't change this section if you're not sure what you are doing
-hm          = figure(1);
-set(hm,'Name','GazeCode','NumberTitle','off');
+hm          = figure('Name','GazeCode','NumberTitle','off','Visible','off');
 hmmar       = [150 100];
 
 set(hm, 'Units', 'pixels');
 ws          = truescreensize();
-ws          = [1 1 ws ];
+ws          = [1 1 ws];
 
 % set figure full screen, position is bottom left width height!;
 set(hm,'Position',[ws(1) + hmmar(1), ws(2) + hmmar(2), ws(3)-2*hmmar(1), ws(4)-2*hmmar(2)]);
@@ -294,9 +230,6 @@ set(hm,'windowkeypressfcn',@verwerkknop,'closerequestfcn',@sluitaf,'userdata',gv
 
 % get coordinates main screen
 hmpos       = get(hm,'Position');
-
-hmxc        = hmpos(3)/2;
-hmyc        = hmpos(4)/2;
 
 hmxmax      = hmpos(3);
 hmymax      = hmpos(4);
@@ -313,61 +246,66 @@ mm1         = uimenu(hm,'Label','Menu');
 sm0         = uimenu(mm1,'Label','Save to text','CallBack',@savetotext);
 sm1         = uimenu(mm1,'Label','About GazeCode','CallBack','uiwait(msgbox(''This is version 1.0.1'',''About FixLabel''))');
 
-%% left panel (Child 2 of hm), don't change this section if you're not sure what you are doing 
+% first get sizes of panels
+pmar        = [50 20];
+knopsizeL 	= [100 100];
+knopsizeR   = [150 150];
+knopmar     = [20 10];
+panelWidth(1) = (hmxmax/2)-2*pmar(1);
+panelWidth(2) = knopsizeR(1)*3+knopmar(1)*4;
+% position them
+leftoverSpace = hmxmax - sum(panelWidth);
+pmarhn        = leftoverSpace/3;
+
+%% left panel (Child 2 of hm), don't change this section if you're not sure what you are doing
+
 lp          = uipanel(hm,'Title','Fix Playback/Lookup','Units','pixels','FontSize',16,'BackgroundColor',[0.8 0.8 0.8]);
-lpmar       = [50 20];
 gv.lp       = lp;
 
-set(lp,'Position',[1+lpmar(1) 1+lpmar(2) (hmxmax/2)-2*lpmar(1) hmymax-2*lpmar(2)]);
+set(lp,'Position',[1+pmarhn 1+pmar(2) panelWidth(1) hmymax-2*pmar(2)]);
 lpsize = get(lp,'Position');
 lpsize = lpsize(3:end);
 
 
-knopsize = [100 100];
-knopmar = [20 10];
 
 fwknop = uicontrol(lp,'Style','pushbutton','string','>>','callback',@playforward,'userdata',gv.fwdbut);
-set(fwknop,'position',[lpsize(1)-knopsize(1)-knopmar(1) knopmar(2) knopsize]);
+set(fwknop,'position',[lpsize(1)-knopsizeL(1)-knopmar(1) knopmar(2) knopsizeL]);
 % set(fwknop,'backgroundcolor',[1 0.5 0]);
 set(fwknop,'fontsize',20);
 
 bkknop = uicontrol(lp,'Style','pushbutton','string','<<','callback',@playback,'userdata',gv.bckbut);
-set(bkknop,'position',[knopmar knopsize]);
+set(bkknop,'position',[knopmar knopsizeL]);
 % set(bkknop,'backgroundcolor',[1 0.5 0]);
 set(bkknop,'fontsize',20);
 
 %% right panel (child 1 of hm), don't change this section if you're not sure what you are doing
 rp          = uipanel('Title','Categories','Units','pixels','FontSize',16,'BackgroundColor',[0.8 0.8 0.8]);
-rpmar       = [50 20];
 
-set(rp,'Position',[hmxc+rpmar(1) 1+rpmar(2) (hmxmax/2)-2*rpmar(1) hmymax-2*rpmar(2)]);
+set(rp,'Position',[pmarhn*2+panelWidth(1) 1+pmar(2) panelWidth(2) hmymax-2*pmar(2)]);
 rpsize      = get(rp,'Position');
 rpsize      = rpsize(3:end);
 
 % right panel buttons
-knopsize    = [150 150];
-knopmar     = [20];
-
 % make grid
-widthgrid   = knopsize(1)*3+2*knopmar;
-heightgrid  = knopsize(2)*3+2*knopmar;
+widthgrid   = knopsizeR(1)*3+2*knopmar(1);
+heightgrid  = knopsizeR(2)*3+2*knopmar(1);
 xstartgrid    = floor((rpsize(1) - widthgrid)/2);
-ystartgrid  = rpsize(2) - heightgrid - knopmar;
+ystartgrid  = rpsize(2) - heightgrid - knopmar(1);
 
-opzij       = knopmar+knopsize(1);
-omhoog      = knopmar+knopsize(2);
+opzij       = knopmar(1)+knopsizeR(1);
+omhoog      = knopmar(1)+knopsizeR(2);
 gridpos     = [...
-    xstartgrid, ystartgrid, knopsize;...
-    xstartgrid+opzij, ystartgrid, knopsize;...
-    xstartgrid+2*opzij, ystartgrid, knopsize;...
+    xstartgrid, ystartgrid, knopsizeR;...
+    xstartgrid+opzij, ystartgrid, knopsizeR;...
+    xstartgrid+2*opzij, ystartgrid, knopsizeR;...
     
-    xstartgrid ystartgrid+omhoog knopsize;...
-    xstartgrid+opzij ystartgrid+omhoog knopsize;...
-    xstartgrid+2*opzij ystartgrid+omhoog knopsize;...
+    xstartgrid ystartgrid+omhoog knopsizeR;...
+    xstartgrid+opzij ystartgrid+omhoog knopsizeR;...
+    xstartgrid+2*opzij ystartgrid+omhoog knopsizeR;...
     
-    xstartgrid ystartgrid+2*omhoog knopsize;...
-    xstartgrid+opzij ystartgrid+2*omhoog knopsize;...
-    xstartgrid+2*opzij ystartgrid+2*omhoog knopsize;...
+    xstartgrid ystartgrid+2*omhoog knopsizeR;...
+    xstartgrid+opzij ystartgrid+2*omhoog knopsizeR;...
+    xstartgrid+2*opzij ystartgrid+2*omhoog knopsizeR;...
     ];
 
 gv.knoppen = [];
@@ -441,7 +379,7 @@ switch gv.datatype
             % exist
         end
         gv.vidObj  = VideoReader([gv.foldnaam gv.fs 'exports' gv.fs hoeveelfilms.name gv.fs 'world_viz.mp4']);
-    case 'Tobii Pro Glasses'
+    case 'Tobii Pro Glasses 2'
         gv.vidObj = VideoReader(gv.filmnaam);
 end
 
@@ -462,7 +400,6 @@ if ~skipdataload
     % want to skip data loading
     
     gv = get(hm,'userdata');
-    disp('Determining fixations...');
     switch gv.datatype
         case 'Pupil Labs'
             tempfold = folderfromfolder([gv.foldnaam gv.fs 'exports']);
@@ -495,66 +432,112 @@ if ~skipdataload
             gv.datx = gv.datx * gv.wcr(1) - gv.wcr(1)/2;
             gv.daty = gv.daty * gv.wcr(2) - gv.wcr(2)/2;
             
-        case 'Tobii Pro Glasses'
+            % determine start and end times of each fixation in one vector (odd
+            % number start times of fixations even number stop times)
+            
+            % The line below determines fixations start and stop times since the
+            % beginning of the recording. For this detection of fixations the algo-
+            % rithm of Hooge and Camps (2013), but this can be replaced by your own
+            % favourite or perhaps more suitable fixation detectioon algorithm.
+            % Important is that this algorithm returns a vector that has fixation
+            % start times at the odd and fixation end times at the even positions
+            % of it.
+            
+            disp('Determining fixations...');
+            gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
+            gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            
+            % TODO: this needs the following, somehow properly populated
+            % gv.coding.mark{1}
+            % gv.coding.type{1}
+            gv.coding.outIdx = 1;
+            
+        case 'Tobii Pro Glasses 2'
             
             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
             data.quality        = computeDataQuality(gv.foldnaam, data, settings.dataQuality.windowLength);
             data.ui.haveEyeVideo = isfield(data.video,'eye');
-            if ~exist(fullfile(gv.foldnaam,'gazeCodeCoding.txt'))
-                copyfile(fullfile(gv.codedir,'gazeCodeCoding.txt'),fullfile(gv.foldnaam,'gazeCodeCoding.txt'));
-            end
             coding              = getCodingData(gv.foldnaam, '', settings.coding, data);
             coding.dataIsCrap   = dataIsCrap;
-            coding.fileOrClass  = ismember(lower(coding.stream.type),{'classifier','filestream'});
             gv.coding           = coding;
             
-            % set numbers of events in gazeCode stream equal to slow phases
-            % and fast phases.
-            gv.coding.mark{6}   = gv.coding.mark{5};
-            gv.coding.type{6}   = gv.coding.type{5};
+            % use coding from getCodingData.
+            [streamIdx,eventToCode] = streamSelectorGUI(gv.coding);
+            assert(~isempty(streamIdx),'You did not select a stream to code, exiting');
+            streams = find(coding.stream.available);
+            qGazeCodeStream = isfield(coding.settings.streams{streams(streamIdx)},'tag') && strcmp(coding.settings.streams{streams(streamIdx)}.tag,'gazeCodeStream');
+            assert(~isempty(streamIdx)||qGazeCodeStream,'You did not select an event to code, exiting')
+            if ~isempty(eventToCode)
+                assert(~isempty(gv.coding.type{streamIdx})&&any(gv.coding.type{streamIdx}==eventToCode),'Selected stream does not contain any events of the selected category. Nothing to code. Exiting.')
+            end
             
-            % set saccades to type 'none' = 1
-            gv.coding.type{6}(gv.coding.type{6} ==4) = 1;
             
+            % ask user where to store coding output
+            [outStreamIdx,newStreamName] = outputStreamSelectorGUI(coding,streamIdx);
+            assert(~isempty(outStreamIdx),'You did not select a stream for storing coding output, exiting');
+            gv.coding.outIdx        = outStreamIdx;
+            gv.coding.streamName    = newStreamName;
+            % make new coding stream for user's output if wanted
+            if outStreamIdx~=streamIdx
+                assert(isempty(newStreamName) || gv.coding.outIdx==length(gv.coding.mark)+1,'internal error, contact developer')
+                gv.coding.mark{gv.coding.outIdx}    = gv.coding.mark{streamIdx};
+                gv.coding.type{gv.coding.outIdx}    = gv.coding.type{streamIdx};
+            end
+            
+            % prep output stream, if not loading and editing existing
+            % stream or copying a GazeCode stream
+            if outStreamIdx~=streamIdx && ~qGazeCodeStream
+                % set everything not of interest to type 1 ('other')
+                gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}~=eventToCode) = 1;
+                % set everything of interest to type 2 ('uncoded')
+                gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}==eventToCode) = 2;
+                % merge adjacent, coding should not contain consecutive
+                % same events
+                iAdj = find(diff(gv.coding.type{gv.coding.outIdx})==0);
+                i=length(iAdj);
+                while i>0
+                    % find start and end of run of adjacent events
+                    e = iAdj(i)+1;
+                    s = iAdj(i);
+                    while i>1&&iAdj(i-1)==s-1
+                        i = i-1;
+                        s = iAdj(i);
+                    end
+                    gv.coding.mark{gv.coding.outIdx}(s+1:e) = [];
+                    gv.coding.type{gv.coding.outIdx}(s+1:e) = [];
+                    i=i-1;
+                end
+            end
+            
+            % get start and end marks of those events the user wanted to
+            % code
+            if outStreamIdx~=streamIdx && ~qGazeCodeStream
+                qEvents = gv.coding.type{gv.coding.outIdx}==2;
+            else
+                % include also already coded events, since we are reloading
+                % GazeCode session
+                qEvents = gv.coding.type{gv.coding.outIdx}>=2;
+            end
+            % fmark should contain start and end of each event to code, one
+            % after the other
+            iEvents = find(qEvents);
+            gv.fmark = reshape([gv.coding.mark{gv.coding.outIdx}(iEvents); gv.coding.mark{gv.coding.outIdx}(iEvents+1)]*1000,1,[]);  % s->ms
             
             % only select data from ts > 0, ts is nulled at onset scene camera! 
             sel = data.eye.binocular.ts >= data.time.startTime & data.eye.binocular.ts <= data.time.endTime;
-             
+            
             gv.datt = data.eye.binocular.ts(sel);
             gv.datx = data.eye.binocular.gp(sel,1);
             gv.daty = data.eye.binocular.gp(sel,2);
             
             gv.datt = gv.datt*1000;
-            gv.datx = gv.datx * gv.wcr(1);
-            gv.daty = gv.daty * gv.wcr(2);
+            gv.datx = gv.datx * data.video.scene.width;
+            gv.daty = gv.daty * data.video.scene.height;
           
         otherwise
             disp('Unknown data type, crashing in 3,2,1,...');
     end
-    % determine start and end times of each fixation in one vector (odd
-    % number start times of fixations even number stop times)
     
-    % The line below determines fixations start and stop times since the
-    % beginning of the recording. For this detection of fixations the algo-
-    % rithm of Hooge and Camps (2013), but this can be replaced by your own
-    % favourite or perhaps more suitable fixation detectioon algorithm.
-    % Important is that this algorithm returns a vector that has fixation
-    % start times at the odd and fixation end times at the even positions
-    % of it.
-    
-    % gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
-    % gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
-    
-    % or use coding from getCodingData.
-    if 0
-        useStream = 'Hooge & Camps (2013): slow/fast';
-    else
-        useStream = 'Hessels et al. (2019): slow/fast';
-    end
-    qStream = strcmp(gv.coding.stream.lbls,useStream);
-    assert(any(qStream),'stream ''%s'' not found',useStream);
-    assert(sum(qStream)==1,'stream ''%s'' found more than once, need a unique stream',useStream);
-    gv.fmark = gv.coding.mark{qStream}*1000;
     
     fixB = gv.fmark(1:2:end)';
     fixE = gv.fmark(2:2:end)';
@@ -582,22 +565,41 @@ if ~skipdataload
     gv.data = [fixnr, fixB, fixE, fixD, xstart, ystart, xend, yend, xmean, xsd, ymean, ysd, fixlabel];
     gv.maxfix   = max(fixnr);
     
+    if outStreamIdx==streamIdx || qGazeCodeStream  % TODO: this is specific to Tobii code...
+        % when loading existing file, put already coded labels into gv.data
+        qWhich = gv.coding.type{gv.coding.outIdx}>1;
+        assert(sum(qWhich)==size(gv.data,1),'internal error contact developer')
+        gv.data(:,end) = log2(gv.coding.type{gv.coding.outIdx}(qWhich))-1;
+    end
+    
     set(hm,'userdata',gv);
     disp('... done');
       
     % determine begin and end frame beloning to fixations start and end
     % times
-    gv.bfr     = floor(fixB/frdur);
-    gv.efr     = ceil(fixE/frdur);
+    switch gv.datatype
+        case 'Pupil Labs'
+            gv.bfr     = floor(fixB/frdur);
+            gv.efr     = ceil(fixE/frdur);
+        case  'Tobii Pro Glasses 2'
+            % use frame time info from GlassesViewer's export
+            [gv.bfr,gv.efr] = deal(nan(size(fixB)));
+            for p=1:length(fixB)
+                gv.bfr(p) = find(data.video.scene.fts<=fixB(p)/1000,1,'last');
+                gv.efr(p) = find(data.video.scene.fts<=fixE(p)/1000,1,'last');
+            end
+    end
+    gv.bfr(gv.bfr<1) = 1;
+    gv.bfr(gv.bfr>gv.maxframe) = gv.maxframe;
+    
+    gv.efr(gv.efr<1) = 1;
+    gv.efr(gv.efr>gv.maxframe) = gv.maxframe;
     
     % determine the frame between beginning and end frame for a fixations,
     % this one will be displayed
     gv.mfr = floor((gv.bfr+gv.efr)/2);
-    if gv.mfr(end) > gv.maxframe
-        gv.mfr(end) = gv.maxframe;
-    end
     
-    % neede for marker in scene camera
+    % needed for marker in scene camera
     gv.fixxpos = xmean;
     gv.fixypos = ymean;
     
@@ -607,17 +609,12 @@ if ~skipdataload
     gv.fixxposE = xend;
     gv.fixyposE = yend;
     
-    
-    gv.bfr(gv.bfr<1) = 1;
-    gv.bfr(gv.bfr>nf) = nf;
-    
-    gv.efr(gv.efr<1) = 1;
-    gv.efr(gv.efr>nf) = nf;
     set(hm,'userdata',gv);
 end
 
 %% start to show the first frame or when reloading the frame last coded.
 showmainfr(hm,gv);
+set(hm,'Visible','on');
 
 end
 
@@ -644,9 +641,12 @@ else
 end
 data = gv.data;
 data(gv.curfix,end) = categorie;
-% put categorie also in coding struct, add 2 as first categories are null
-% and zero
-gv.coding.type{6}(2*gv.curfix-1) = gv.coding.codeCats{6}{categorie+2,2};
+% put categorie also in coding struct, note that categories are power of 2,
+% and that 1 is "other". categorie 0 ("uncoded") should correspond to code
+% 2, categorie 1 to code 4, etc, so categorie+1 below
+qWhich = gv.coding.mark{gv.coding.outIdx}==gv.fmark(2*gv.curfix-1)/1000;
+assert(sum(qWhich)==1,'Internal error, contact developer')
+gv.coding.type{gv.coding.outIdx}(qWhich) = 2^(categorie+1);
 gv.data = data;
 setlabel(gv);
 
@@ -669,8 +669,6 @@ hold(gv.frameas,'on');
 stip = scatter(gv.fixxpos(gv.curfix),gv.fixypos(gv.curfix),1000,'ro');
 set(stip,'MarkerEdgeColor',[0 0.85 1],'MarkerFaceAlpha',.65,'MarkerFaceColor',[0 0.85 1],'LineWidth',2);
 
-
-% clc;
 
 hold(gv.frameas,'off');
 setlabel(gv);
@@ -731,8 +729,6 @@ end
 % function to handle keypresses as shortcuts, function of main screen
 function verwerkknop(src,evt)
 gv = get(src,'userdata');
-tsrc = get(src,'Children');
-% Simplified as per suggestion of D.C. Niehorster on 2018-03-29
 switch evt.Key
      case gv.fwdbut
         playforward(findobj('UserData',gv.fwdbut),evt);
@@ -763,7 +759,7 @@ switch evt.Key
             labelfix(src,evt);   
         end
     otherwise
-        disp('Unknown key pressed');
+        % disp('Unknown key pressed');
 end
 
 end
@@ -773,7 +769,6 @@ disp('Saving to text...');
 mm1 = get(src,'parent');
 hm = get(mm1,'parent');
 gv = get(hm,'userdata');
-data = gv.data;
 filenaam = fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName, '.xls']);
 % while exist(filenaam,'file')
 %     answer = inputdlg(['File: ', filenaam ,'.xls already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.recName '_01.xls']});
@@ -791,23 +786,35 @@ end
 function sluitaf(src,evt)
 try
     gv = get(src,'userdata');
-    % get gazeCodes for GlasseViewer and write them to a file
-    gazecodes = [gv.coding.mark{6}(1:end-1)', gv.coding.type{6}'];
-    fid = fopen(fullfile(gv.foldnaam,'gazeCodeCoding.txt'),'w');
-    fprintf(fid,'%f\t%d\n',gazecodes');
-    fclose(fid);
     knopsluit = questdlg('You''re about to close the program. Are you sure you''re done and want to quit?','Are you sure?','Yes','No','No');
     if strcmp('Yes',knopsluit)
-        %     commandwindow;
-        disp('Closing...');
-        gv = rmfield(gv,'lp');
-        save(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'.mat']),'gv');
-        coding = gv.coding;
-        save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
-        disp('Saving...')
+        switch gv.datatype
+            case 'Pupil Labs'
+                gv = rmfield(gv,'lp');
+                save(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'.mat']),'gv');
+            case 'Tobii Pro Glasses 2'
+                % get gazeCodes for GlasseViewer and write them to a text
+                % file
+                gazecodes = [gv.coding.mark{gv.coding.outIdx}(1:end-1)', gv.coding.type{gv.coding.outIdx}'];
+                fid = fopen(fullfile(gv.foldnaam,'gazeCodeCoding.txt'),'w');    % TODO: unieke naam per stream? lijkt me wel handig
+                fprintf(fid,'%f\t%d\n',gazecodes');
+                fclose(fid);
+                % also store to coding.mat
+                % 1. add stream to settings, if needed
+                if gv.coding.outIdx>sum(gv.coding.stream.available)
+                    str = getCodingStreamSetup(gv.coding.streamName);
+                    gv.coding.settings.streams = [gv.coding.settings.streams; str];
+                    % 2. add also to coding.stream.available
+                    gv.coding.stream.available = [gv.coding.stream.available true];
+                end
+                % 3. mark and type are already good, we're ready to save
+                coding = rmfield(gv.coding,{'outIdx','streamName'});
+                save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
+        end
+        
         set(src,'closerequestfcn','closereq');
         rmpath(genpath(gv.rootdir));
-        close(src);
+        delete(src);
     else
         disp('Program not closed. Continuing.');
     end
@@ -816,3 +823,11 @@ catch
 end
 end
 
+
+function str = getCodingStreamSetup(name)
+str.type        = 'handStream';
+str.tag         = 'gazeCodeStream';
+str.lbl         = name;
+str.locked      = false;
+str.categories  = {'other';20;'uncoded';1;'GC1';2;'GC2';3;'GC3';4;'GC4';5;'GC5';6;'GC6';7;'GC7';8;'GC8';9;'GC9';10};
+end
