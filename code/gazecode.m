@@ -77,8 +77,6 @@ gv.cat9but = {'9','numpad9'};
 gv.cat0but = {'0','numpad0'};
 
 %% directories and settings
-gv.foldnaam     = 0;
-gv.catfoldnaam  = 0;
 gv.fs           = filesep;
 gv.codedir      = cd; cd ..;
 gv.rootdir      = cd;
@@ -131,17 +129,6 @@ close(gv.splashh);
 % more options. Question dialog allows for only three options
 gv.datatype = questdlg(['What type of of mobile eye-tracking data do you want to code?'],'Data type?','Pupil Labs','Tobii Pro Glasses','Pupil Labs');
 
-% if strcmp(gv.datatype,'Tobii Pro Glasses')
-%     help dispTobiiInstructions;
-%     dispTobiiInstructions;
-%     clc;
-%     TobiiOK = questdlg(['Did you place the video file and the data file from Tobii in the data folder of GazeCode?'],'Are the Tobii files in the right location?','Yes, continue','No & quit','Yes, continue');
-%     if strcmp(TobiiOK,'No & quit')
-%         disp('GazeCode quit, since you indicated not having put the Tobii files in the right location.')
-%         return
-%     end
-% end
-
 % set camera settings of eye-tracker data
 switch gv.datatype
     case 'Pupil Labs'
@@ -154,18 +141,15 @@ switch gv.datatype
 end
 
 %%
-while gv.catfoldnaam == 0
-    gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
-end
+gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
+assert(ischar(gv.catfoldnaam),'You did not select a categories directory, exiting');
 
 %% load data folder
 switch gv.datatype
     case 'Pupil Labs'
-        while gv.foldnaam == 0
-            gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
-        end
+        gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
+        assert(ischar(gv.foldnaam),'You did not select a data directory, exiting');
         
-            
         filmnaam    = strsplit(gv.foldnaam,gv.fs);
         gv.filmnaam    = filmnaam{end};
         
@@ -190,6 +174,7 @@ switch gv.datatype
     case 'Tobii Pro Glasses'
         % do the selecor thing
         selectedDir = uigetdir(gv.datadir,'Select projects directory of SD card');
+        assert(ischar(selectedDir),'You did not select a data directory, exiting');
         
         if exist(fullfile(selectedDir,'segments'),'dir') && exist(fullfile(selectedDir,'recording.json'),'file')
             % user selected what is very likely a recording's dir directly
