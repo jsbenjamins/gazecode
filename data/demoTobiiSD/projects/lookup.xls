@@ -1,0 +1,2 @@
+ProjectID	ParticipantID	RecordingID	CalibrationID	ProjectName	ProjectCreateTime	ParticipantName	ParticipantNotes	RecordingName	RecordingStartTime	RecordingNotes	CalibrationStatus	FirmwareVersion	HeadUnitSerial	RecordingUnitSerial	EyeCameraSetting	SceneCameraSetting
+raoscyb	vxgtdb2	gzz7stc	3gqkra3	DemoIntegratie	2019-03-18 14:14:46	Roy005		Recording011	2019-03-20 13:25:47		calibrated	1.25.3-citronkola	TG02G-010105956192	TG02B-080105043691	Indoor	GazeBasedExposure
