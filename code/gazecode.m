@@ -127,14 +127,14 @@ close(gv.splashh);
 
 % this is now a question dialog, but needs to be changed to a dropdown for
 % more options. Question dialog allows for only three options
-gv.datatype = questdlg(['What type of of mobile eye-tracking data do you want to code?'],'Data type?','Pupil Labs','Tobii Pro Glasses','Pupil Labs');
+gv.datatype = questdlg(['What type of of mobile eye-tracking data do you want to code?'],'Data type?','Pupil Labs','Tobii Pro Glasses 2','Pupil Labs');
 
 % set camera settings of eye-tracker data
 switch gv.datatype
     case 'Pupil Labs'
         gv.wcr = [1280 720]; % world cam resolution
         gv.ecr = [640 480]; % eye cam resolution
-    case 'Tobii Pro Glasses'
+    case 'Tobii Pro Glasses 2'
         % this is in glassesViewer's export, at
         % data.video.scene.width, data.video.scene.height
         % data.video.eye.width, data.video.eye.height
@@ -171,7 +171,7 @@ switch gv.datatype
         else
             % do nothing
         end
-    case 'Tobii Pro Glasses'
+    case 'Tobii Pro Glasses 2'
         % do the selecor thing
         selectedDir = uigetdir(gv.datadir,'Select projects directory of SD card');
         assert(ischar(selectedDir),'You did not select a data directory, exiting');
@@ -376,7 +376,7 @@ switch gv.datatype
             % exist
         end
         gv.vidObj  = VideoReader([gv.foldnaam gv.fs 'exports' gv.fs hoeveelfilms.name gv.fs 'world_viz.mp4']);
-    case 'Tobii Pro Glasses'
+    case 'Tobii Pro Glasses 2'
         gv.vidObj = VideoReader(gv.filmnaam);
 end
 
@@ -449,7 +449,7 @@ if ~skipdataload
             % gv.coding.type{1}
             gv.coding.outIdx = 1;
             
-        case 'Tobii Pro Glasses'
+        case 'Tobii Pro Glasses 2'
             
             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
             data.quality        = computeDataQuality(gv.foldnaam, data, settings.dataQuality.windowLength);
@@ -578,7 +578,7 @@ if ~skipdataload
         case 'Pupil Labs'
             gv.bfr     = floor(fixB/frdur);
             gv.efr     = ceil(fixE/frdur);
-        case  'Tobii Pro Glasses'
+        case  'Tobii Pro Glasses 2'
             % use frame time info from GlassesViewer's export
             [gv.bfr,gv.efr] = deal(nan(size(fixB)));
             for p=1:length(fixB)
@@ -789,7 +789,7 @@ try
             case 'Pupil Labs'
                 gv = rmfield(gv,'lp');
                 save(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'.mat']),'gv');
-            case 'Tobii Pro Glasses'
+            case 'Tobii Pro Glasses 2'
                 % get gazeCodes for GlasseViewer and write them to a text
                 % file
                 gazecodes = [gv.coding.mark{gv.coding.outIdx}(1:end-1)', gv.coding.type{gv.coding.outIdx}'];
