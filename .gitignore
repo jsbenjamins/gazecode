@@ -1,4 +1,6 @@
 .DS_Store
-data/*
+data/demoPositiveScience/*
+data/demoPupilLabs/*
+data/demoSMI/*
 results/*
 *.asv
