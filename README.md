@@ -39,11 +39,11 @@
   in Matlab
   
   2) Prepare the data you want to analyze:
-      1. When using Pupil-labs data:
-          1. Export both a visualisation video of raw mobile eye-tracking data and
+      1. When using Pupil-labs, SMI or Positive Science data:
+          1. If needed, export both a visualisation video of raw mobile eye-tracking data and
        the data itself.
           1. Put the video file and the data file in the data folder of GazeCode
-    (demo data are available at http://tinyurl.com/gazecodedemodata for Pupil-labs)
+    (demo data are available at http://tinyurl.com/gazecodedemodata for Pupil-labs, SMI and Positive Science)
 
       1. Tobii Pro Glasses 2 recordings as stored on its SD card can be directly
       loaded with GazeCode by making use of functionality provided by
