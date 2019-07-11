@@ -7,20 +7,20 @@ function gazecode(settings)
 % This open-source toolbox has been developed by J.S. Benjamins, R.S.
 % Hessels and I.T.C. Hooge. When you use it, please cite:
 %
-% Jeroen S. Benjamins, Roy S. Hessels, and Ignace T. C. Hooge. 2018. 
-% Gazecode: open-source software for manual mapping of mobile eye-tracking 
-% data. In Proceedings of the 2018 ACM Symposium on Eye Tracking Research & 
-% Applications (ETRA '18). ACM, New York, NY, USA, Article 54, 4 pages. 
+% Jeroen S. Benjamins, Roy S. Hessels, and Ignace T. C. Hooge. 2018.
+% Gazecode: open-source software for manual mapping of mobile eye-tracking
+% data. In Proceedings of the 2018 ACM Symposium on Eye Tracking Research &
+% Applications (ETRA '18). ACM, New York, NY, USA, Article 54, 4 pages.
 % DOI: https://doi.org/10.1145/3204493.3204568
 %
 % For importing data from Tobii Glasses 2, it uses GlassesViewer. When
-% using this toolbox with Tobii Glasses data, please also cite 
+% using this toolbox with Tobii Glasses data, please also cite
 % Niehorster, D.C., Hessels, R.S., and Benjamins, J.S. (in prep).
 % GlassesViewer: Open-source software for viewing and analyzing data from
 % the Tobii Pro Glasses 2 eye tracker.
 %
 % For more information, questions, or to check whether we have updated to a
-% better version, e-mail: j.s.benjamins@uu.nl. GazeCode is available from 
+% better version, e-mail: j.s.benjamins@uu.nl. GazeCode is available from
 % www.github.com/jsbenjamins/gazecode and GlassesViewer from
 % https://github.com/dcnieho/glassesviewer
 %
@@ -74,7 +74,9 @@ gv.cat6but = {'6','numpad6'};
 gv.cat7but = {'7','numpad7'};
 gv.cat8but = {'8','numpad8'};
 gv.cat9but = {'9','numpad9'};
-gv.cat0but = {'0','numpad0'};
+gv.catjbut = 'j';
+% gv.cat0but = {'0','numpad0'};
+
 
 %% directories and settings
 gv.fs           = filesep;
@@ -101,7 +103,6 @@ gv.datadir      = [cd gv.fs 'data'];
 cd(gv.datadir);
 
 cd(gv.rootdir);
-cd ..;
 
 gv.glassesviewerdir  = [cd gv.fs 'GlassesViewer'];
 cd(gv.glassesviewerdir);
@@ -127,54 +128,43 @@ close(gv.splashh);
 
 % this is now a question dialog, but needs to be changed to a dropdown for
 % more options. Question dialog allows for only three options
-gv.datatype = questdlg(['What type of mobile eye-tracking data do you want to code?'],'Data type?','Pupil Labs','Tobii Pro Glasses 2','SMI Glasses','Positive Science','Pupil Labs');
-assert(~isempty(gv.datatype),'You did not select a type of mobile eye-tracking data, exiting');
+models = {'Pupil Labs','Tobii Pro Glasses 2','SMI Glasses','Positive Science'};
+modelIdx = listdlg ('ListString', models,'SelectionMode', 'Single', 'PromptString', 'Select eye-tracker', 'Initialvalue', 2,'Cancelstring','Quit','ListSize',[160 160]);
+% gv.datatype = listdlg('What type of mobile eye-tracking data do you want to code?','Data type?','Pupil Labs','Tobii Pro Glasses 2','SMI Glasses','Positive Science','Pupil Labs');
+assert(~isempty(modelIdx),'You did not select a type of mobile eye-tracking data, exiting');
 
+gv.datatype = models{modelIdx};
 % set camera settings of eye-tracker data
 switch gv.datatype
     case 'Pupil Labs'
         gv.wcr = [1280 720]; % world cam resolution
         gv.ecr = [640 480]; % eye cam resolution
+    case 'SMI Glasses'
+        gv.wcr = [960 720]; % world cam resolution, can also be 960 x 720
+        gv.ecr = [640 480]; % eye cam resolution (assumption, not known ATM)
+    case 'Positive Science'
+        gv.wcr = [640 480]; % wordl cam resolution
+        gv.ecr = [320 240]; % eye cam resolution (assumption, not known ATM)
     case 'Tobii Pro Glasses 2'
         % this is in glassesViewer's export, at
         % data.video.scene.width, data.video.scene.height
-        % data.video.eye.width, data.video.eye.height    
+        % data.video.eye.width, data.video.eye.height
 end
 
 %%
+disp('Select directory of categories');
 gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
+clc;
 assert(ischar(gv.catfoldnaam),'You did not select a categories directory, exiting');
 
 %% load data folder
 switch gv.datatype
-    case 'Pupil Labs'
-        gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
-        assert(ischar(gv.foldnaam),'You did not select a data directory, exiting');
-        
-        filmnaam    = strsplit(gv.foldnaam,gv.fs);
-        gv.filmnaam    = filmnaam{end};
-        
-        resdir = [gv.resdir gv.fs gv.filmnaam];
-        
-        if exist([resdir gv.fs gv.filmnaam '.mat']) > 0
-            oudofnieuw = questdlg(['There already is a results directory with a file for ',gv.filmnaam,'. Do you want to load previous results or start over? Starting over will overwrite previous results.'],'Folder already labeled?','Load previous','Start over','Load previous');
-            if strcmp(oudofnieuw,'Load previous')
-                % IMPORANT NOTE FOR TESTING! This reloads gv! Use start over when
-                % making changes to this file.
-                load([resdir gv.fs gv.filmnaam '.mat']);
-                skipdataload = true;
-            else
-                rmdir(resdir,'s');
-                mkdir(resdir);
-            end
-        elseif exist(resdir) == 0
-            mkdir(resdir);
-        else
-            % do nothing
-        end
     case 'Tobii Pro Glasses 2'
         % do the selecor thing
+        disp('Select projects directory of SD card');
         selectedDir = uigetdir(gv.datadir,'Select projects directory of SD card');
+        % adding disp as Mac does not show title of UI elements
+        clc;
         assert(ischar(selectedDir),'You did not select a data directory, exiting');
         
         if exist(fullfile(selectedDir,'segments'),'dir') && exist(fullfile(selectedDir,'recording.json'),'file')
@@ -207,13 +197,35 @@ switch gv.datatype
         participant = jsondecoder(fread(fid,inf,'*char').');
         gv.partName = participant.pa_info.Name;
         fclose(fid);
+    otherwise
+        disp('Select data directory to code');
+        gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
+        % adding disp as Mac does not show title of UI elements
+        clc;
+        assert(ischar(gv.foldnaam),'You did not select a data directory, exiting');
+        
+        filmnaam    = strsplit(gv.foldnaam,gv.fs);
+        gv.filmnaam    = filmnaam{end};
+        
+        gv.resdir = [gv.resdir gv.fs gv.filmnaam];
+        
+        if exist([gv.resdir gv.fs gv.filmnaam '.mat']) > 0
+            oudofnieuw = questdlg(['There already is a results directory with a file for ',gv.filmnaam,'. Do you want to load previous results or start over? Starting over will overwrite previous results.'],'Folder already labeled?','Load previous','Start over','Load previous');
+            if strcmp(oudofnieuw,'Load previous')
+                % IMPORANT NOTE FOR TESTING! This reloads gv! Use start over when
+                % making changes to this file.
+                load([gv.resdir gv.fs gv.filmnaam '.mat']);
+                skipdataload = true;
+            else
+                rmdir(gv.resdir,'s');
+                mkdir(gv.resdir);
+            end
+        elseif exist(gv.resdir) == 0
+            mkdir(gv.resdir);
+        else
+            % do nothing
+        end
 end
-
-
-
-
-
-
 
 %% init main screen, don't change this section if you're not sure what you are doing
 hm          = figure('Name','GazeCode','NumberTitle','off','Visible','off');
@@ -311,7 +323,7 @@ gridpos     = [...
 gv.knoppen = [];
 
 for p = 1:size(gridpos,1)
-%     gv.knoppen(p) = uicontrol(rp,'Style','pushbutton','HorizontalAlignment','left','string','','callback',@labelfix,'userdata',gv);
+    %     gv.knoppen(p) = uicontrol(rp,'Style','pushbutton','HorizontalAlignment','left','string','','callback',@labelfix,'userdata',gv);
     gv.knoppen(p) = uicontrol(rp,'Style','pushbutton','HorizontalAlignment','left','string','','callback',@labelfix,'userdata',gv);
     set(gv.knoppen(p),'position',gridpos(p,:));
     set(gv.knoppen(p),'backgroundcolor',[1 1 1]);
@@ -369,18 +381,17 @@ gv.lpaxpos = get(lpax,'position');
 % is default when exporting visualisations in Pupil Labs with a default
 % name of the file, Tobii Pro Glasses does not, so select it.
 switch gv.datatype
-    case 'Pupil Labs'
-        waarisdefilmdir = [gv.foldnaam gv.fs 'exports'];
-        
-        [hoeveelfilms, nhoeveelfilms] = folderfromfolder(waarisdefilmdir);
-        
-        if nhoeveelfilms > 1
-            % to be done still, select which visualisation movie to use if multiple
-            % exist
-        end
-        gv.vidObj  = VideoReader([gv.foldnaam gv.fs 'exports' gv.fs hoeveelfilms.name gv.fs 'world_viz.mp4']);
     case 'Tobii Pro Glasses 2'
         gv.vidObj = VideoReader(gv.filmnaam);
+    otherwise
+        cd(gv.foldnaam);
+        disp('Select the video file');
+        [videofile,videopath] = uigetfile('*.asf;*.asx;*.avi;*.m4v;*.mj2;*.mov;*.mp4;*.mpg;*.wmv;','Select video file');
+        clc;
+        cd(gv.codedir);
+        disp('loading video file...')
+        gv.vidObj = VideoReader([videopath gv.fs videofile]);
+        clc;
 end
 
 gv.fr       = get(gv.vidObj,'FrameRate');
@@ -392,8 +403,8 @@ gv.centery  = gv.vidObj.Height/2;
 set(hm,'userdata',gv);
 
 %% fixation detection using data
-% read data and determine fixations, here cases can be added for other 
-% mobile eye trackers, as well as changing the fixation detection algorithm 
+% read data and determine fixations, here cases can be added for other
+% mobile eye trackers, as well as changing the fixation detection algorithm
 % by altering the function that now runs on line 423.
 if ~skipdataload
     % to be done still, select data file from results directory if you
@@ -401,13 +412,61 @@ if ~skipdataload
     
     gv = get(hm,'userdata');
     switch gv.datatype
+        case 'SMI Glasses'
+            cd(gv.foldnaam);
+            disp('Select data file with gaze positions');
+            [filenaam, filepad] = uigetfile('.txt','Select data file with gaze positions');
+            clc;
+            cd(gv.codedir);
+            % gv.wcr gets updated based om data as an extra safety measure
+            [gv.datt, gv.datx, gv.daty] = leesgazedataSMI([filepad gv.fs filenaam]);
+            
+            % determine start and end times of each fixation in one vector (odd
+            % number start times of fixations even number stop times)
+            
+            % The line below determines fixations start and stop times since the
+            % beginning of the recording. For this detection of fixations the algo-
+            % rithm of Hessels et (2019 submoitted), but this can be replaced by your own
+            % favourite or perhaps more suitable fixation detectioon algorithm.
+            % Important is that this algorithm returns a vector that has fixation
+            % start times at the odd and fixation end times at the even positions
+            % of it.
+            
+            disp('Determining fixations...');
+            gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            
+            disp('Determining fixations...');
+            % gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
+            gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+        case 'Positive Science'
+            cd(gv.foldnaam);
+            disp('Select data file with gaze positions');
+            [filenaam, filepad] = uigetfile('.txt','Select data file with gaze positions');
+            clc;
+            cd(gv.codedir);
+            
+            % gv.wcr gets updated based om data as an extra safety measure
+            [gv.datt, gv.datx, gv.daty] = leesgazedataPosSci([filepad gv.fs filenaam]);
+            
+            % determine start and end times of each fixation in one vector (odd
+            % number start times of fixations even number stop times)
+            
+            % The line below determines fixations start and stop times since the
+            % beginning of the recording. For this detection of fixations the algo-
+            % rithm of Hessels et (2019 submoitted), but this can be replaced by your own
+            % favourite or perhaps more suitable fixation detectioon algorithm.
+            % Important is that this algorithm returns a vector that has fixation
+            % start times at the odd and fixation end times at the even positions
+            % of it.
+            
+            disp('Determining fixations...');
+            gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
         case 'Pupil Labs'
-            tempfold = folderfromfolder([gv.foldnaam gv.fs 'exports']);
-            % if there are more than one exports, it just takes the first!
-            tempfold = tempfold(1).name;
-            % note the typo! Pupils Labs currently exports postions not
-            % positions!
-            filenaam = [gv.foldnaam gv.fs 'exports' gv.fs tempfold gv.fs 'gaze_postions.csv'];
+            cd(gv.foldnaam);
+            disp('Select data file with gaze positions');
+            [filenaam, filepad] = uigetfile('.csv','Select data file with gaze positions');
+            clc;
+            cd(gv.codedir);
             
             % this file reads the exported data file from Pupil Labs and gets time
             % stamp and x and y coordinates
@@ -429,29 +488,23 @@ if ~skipdataload
             gv.daty(gv.daty > 1) = NaN;
             gv.daty(gv.daty < 0) = NaN;
             
-            gv.datx = gv.datx * gv.wcr(1) - gv.wcr(1)/2;
-            gv.daty = gv.daty * gv.wcr(2) - gv.wcr(2)/2;
+            gv.datx = gv.datx * gv.wcr(1);
+            gv.daty = gv.wcr(2) - gv.daty * gv.wcr(2);
             
             % determine start and end times of each fixation in one vector (odd
             % number start times of fixations even number stop times)
             
             % The line below determines fixations start and stop times since the
             % beginning of the recording. For this detection of fixations the algo-
-            % rithm of Hooge and Camps (2013), but this can be replaced by your own
+            % rithm of Hessels et (2019 submoitted), but this can be replaced by your own
             % favourite or perhaps more suitable fixation detectioon algorithm.
             % Important is that this algorithm returns a vector that has fixation
             % start times at the odd and fixation end times at the even positions
             % of it.
             
             disp('Determining fixations...');
-            gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
             gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
             
-            % TODO: this needs the following, somehow properly populated
-            % gv.coding.mark{1}
-            % gv.coding.type{1}
-            gv.coding.outIdx = 1;
-                    
         case 'Tobii Pro Glasses 2'
             
             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
@@ -523,7 +576,7 @@ if ~skipdataload
             iEvents = find(qEvents);
             gv.fmark = reshape([gv.coding.mark{gv.coding.outIdx}(iEvents); gv.coding.mark{gv.coding.outIdx}(iEvents+1)]*1000,1,[]);  % s->ms
             
-            % only select data from ts > 0, ts is nulled at onset scene camera! 
+            % only select data from ts > 0, ts is nulled at onset scene camera!
             sel = data.eye.binocular.ts >= data.time.startTime & data.eye.binocular.ts <= data.time.endTime;
             
             gv.datt = data.eye.binocular.ts(sel);
@@ -533,7 +586,7 @@ if ~skipdataload
             gv.datt = gv.datt*1000;
             gv.datx = gv.datx * data.video.scene.width;
             gv.daty = gv.daty * data.video.scene.height;
-          
+            
         otherwise
             disp('Unknown data type, crashing in 3,2,1,...');
     end
@@ -562,25 +615,36 @@ if ~skipdataload
     fixnr = [1:length(fixB)]';
     fixlabel    = zeros(size(fixnr));
     
+    if size(fixB,2) > 1
+        fixB = fixB';
+        fixE = fixE';
+        fixD = fixD';
+    end
+    
     gv.data = [fixnr, fixB, fixE, fixD, xstart, ystart, xend, yend, xmean, xsd, ymean, ysd, fixlabel];
     gv.maxfix   = max(fixnr);
     
-    if outStreamIdx==streamIdx || qGazeCodeStream  % TODO: this is specific to Tobii code...
-        % when loading existing file, put already coded labels into gv.data
-        qWhich = gv.coding.type{gv.coding.outIdx}>1;
-        assert(sum(qWhich)==size(gv.data,1),'internal error contact developer')
-        gv.data(:,end) = log2(gv.coding.type{gv.coding.outIdx}(qWhich))-1;
+    switch gv.datatype
+        case 'Tobii Pro Glasses 2'
+            if outStreamIdx==streamIdx || qGazeCodeStream  % TODO: this is specific to Tobii code...
+                % when loading existing file, put already coded labels into gv.data
+                qWhich = gv.coding.type{gv.coding.outIdx}>1;
+                assert(sum(qWhich)==size(gv.data,1),'internal error contact developer')
+                gv.data(:,end) = log2(gv.coding.type{gv.coding.outIdx}(qWhich))-1;
+                % added such that if previoulsy coded GazeCode will pickup at the
+                % last coded event.
+                gv.curfix = find(gv.data(:,end)>1, 1,'last');
+            end
+        otherwise
+            % do nothing
     end
     
     set(hm,'userdata',gv);
     disp('... done');
-      
+    
     % determine begin and end frame beloning to fixations start and end
     % times
     switch gv.datatype
-        case 'Pupil Labs'
-            gv.bfr     = floor(fixB/frdur);
-            gv.efr     = ceil(fixE/frdur);
         case  'Tobii Pro Glasses 2'
             % use frame time info from GlassesViewer's export
             [gv.bfr,gv.efr] = deal(nan(size(fixB)));
@@ -588,6 +652,9 @@ if ~skipdataload
                 gv.bfr(p) = find(data.video.scene.fts<=fixB(p)/1000,1,'last');
                 gv.efr(p) = find(data.video.scene.fts<=fixE(p)/1000,1,'last');
             end
+        otherwise
+            gv.bfr     = floor(fixB/frdur);
+            gv.efr     = ceil(fixE/frdur);
     end
     gv.bfr(gv.bfr<1) = 1;
     gv.bfr(gv.bfr>gv.maxframe) = gv.maxframe;
@@ -618,7 +685,7 @@ set(hm,'Visible','on');
 
 end
 
-% function to attribute a category code to the fixation, this is a function 
+% function to attribute a category code to the fixation, this is a function
 % of the buttons in the right panel
 function labelfix(src,evt)
 if isempty(evt)
@@ -627,26 +694,29 @@ if isempty(evt)
     hm = get(rp,'parent');
     gv = get(hm,'userdata');
 else
-    % if zero is pressed a code is reset
-    if ~strcmp(evt.Character,'0') || isempty(evt)
-        categorie = get(src,'userdata');
-        rp = get(src,'parent');
-        hm = get(rp,'parent');
-        gv = get(hm,'userdata');
-    else
-        hm = src;
-        categorie = 0;
-        gv = get(hm,'userdata');
+    categorie = get(src,'userdata');
+    rp = get(src,'parent');
+    hm = get(rp,'parent');
+    gv = get(hm,'userdata');
+    if gv.data(gv.curfix,end) == categorie
+        if categorie ~= 0
+            categorie = 0;
+        end
     end
 end
 data = gv.data;
 data(gv.curfix,end) = categorie;
-% put categorie also in coding struct, note that categories are power of 2,
-% and that 1 is "other". categorie 0 ("uncoded") should correspond to code
-% 2, categorie 1 to code 4, etc, so categorie+1 below
-qWhich = gv.coding.mark{gv.coding.outIdx}==gv.fmark(2*gv.curfix-1)/1000;
-assert(sum(qWhich)==1,'Internal error, contact developer')
-gv.coding.type{gv.coding.outIdx}(qWhich) = 2^(categorie+1);
+switch gv.datatype
+    case 'Tobii Pro Glasses 2'
+        % put categorie also in coding struct, note that categories are power of 2,
+        % and that 1 is "other". categorie 0 ("uncoded") should correspond to code
+        % 2, categorie 1 to code 4, etc, so categorie+1 below
+        qWhich = gv.coding.mark{gv.coding.outIdx}==gv.fmark(2*gv.curfix-1)/1000;
+        assert(sum(qWhich)==1,'Internal error, contact developer')
+        gv.coding.type{gv.coding.outIdx}(qWhich) = 2^(categorie+1);
+    otherwise
+        % nothing
+end
 gv.data = data;
 setlabel(gv);
 
@@ -730,33 +800,48 @@ end
 function verwerkknop(src,evt)
 gv = get(src,'userdata');
 switch evt.Key
-     case gv.fwdbut
+    case gv.fwdbut
         playforward(findobj('UserData',gv.fwdbut),evt);
-     case gv.bckbut
+    case gv.bckbut
         playback(findobj('UserData',gv.bckbut),evt);
-     case gv.cat1but
+    case gv.cat1but
         labelfix(findobj('UserData',1),evt);
-     case gv.cat2but
+    case gv.cat2but
         labelfix(findobj('UserData',2),evt);
-     case gv.cat3but
+    case gv.cat3but
         labelfix(findobj('UserData',3),evt);
-     case gv.cat4but
+    case gv.cat4but
         labelfix(findobj('UserData',4),evt);
-     case gv.cat5but
+    case gv.cat5but
         labelfix(findobj('UserData',5),evt);
-     case gv.cat6but
+    case gv.cat6but
         labelfix(findobj('UserData',6),evt);
-     case gv.cat7but
+    case gv.cat7but
         labelfix(findobj('UserData',7),evt);
-     case gv.cat8but
+    case gv.cat8but
         labelfix(findobj('UserData',8),evt);
-     case gv.cat9but
+    case gv.cat9but
         labelfix(findobj('UserData',9),evt);
-     case gv.cat0but
+        %      case gv.cat0but
+        %         % pushing command buttons also codes as 0, so check whether
+        %         % evt.Modifier is empty to discern a command key with key zero
+        %         if isempty(evt.Modifier)
+        %             labelfix(src,evt);
+        %         end
+    case gv.catjbut
         % pushing command buttons also codes as 0, so check whether
         % evt.Modifier is empty to discern a command key with key zero
-        if isempty(evt.Modifier)
-            labelfix(src,evt);   
+        welkefix = inputdlg('Jump to which event?','Jump',1,{num2str(gv.curfix)});
+        if isempty(welkefix),return,end
+        welkefix = str2num(welkefix{:});
+        if isnumeric(welkefix)
+            if isempty(welkefix)|| welkefix < 1 || welkefix > gv.maxfix
+                disp(sprintf('Wrong input! Use numbers between 1 and %d',gv.maxfix));
+            else
+                gv.curfix = welkefix;
+                set(src,'userdata',gv);
+                showmainfr(src,gv);
+            end
         end
     otherwise
         % disp('Unknown key pressed');
@@ -769,11 +854,36 @@ disp('Saving to text...');
 mm1 = get(src,'parent');
 hm = get(mm1,'parent');
 gv = get(hm,'userdata');
-filenaam = fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName, '.xls']);
-% while exist(filenaam,'file')
-%     answer = inputdlg(['File: ', filenaam ,'.xls already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.recName '_01.xls']});
-%     filenaam = fullfile(gv.resdir,gv.partName,gv.recName answer{1});
-% end
+switch gv.datatype
+    case 'Tobii Pro Glasses 2'
+        tempresdir = fullfile(gv.resdir,gv.partName,gv.recName);
+        if ~exist(tempresdir)
+            mkdir(fullfile(gv.resdir,gv.partName,gv.recName));
+        end
+        filenaam = fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'_',gv.coding.streamName, '.xls']);
+        while exist(filenaam,'file')
+            answer = inputdlg(['File: ', filenaam ,'.xls already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.recName,'_',gv.coding.streamName,'_01.xls']});
+            if isempty(answer)  % to prevent pressing cancel going wrong (TODO, kill cancel button)
+                % filenaam = filenaam;
+                disp('... saving cancelled');
+                return; % test this!
+            else
+                filenaam = fullfile(gv.resdir,gv.partName,gv.recName, answer{1});
+            end
+        end
+    otherwise
+        filenaam = fullfile(gv.resdir,[gv.filmnaam '.xls']);
+        while exist(filenaam,'file')
+            answer = inputdlg(['File: ', filenaam ,'.xls already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.filmnaam '_01.xls']});
+            if isempty(answer) % to prevent pressing cancel going wrong (TODO, kill cancel button)
+                % filenaam = filenaam;
+                disp('... saving cancelled');
+                return;
+            else
+                filenaam = fullfile(gv.resdir, answer{1});
+            end
+        end   
+end
 fid = fopen(filenaam,'w+');
 fprintf(fid,[repmat('%s\t',1,12),'%s\n'],'fix nr','fix start (ms)','fix end (ms)','fix dur (ms)','x start','y start','x end','y end','mean x','sd x','mean y','sd y','label');
 fgetl(fid);
@@ -789,9 +899,6 @@ try
     knopsluit = questdlg('You''re about to close the program. Are you sure you''re done and want to quit?','Are you sure?','Yes','No','No');
     if strcmp('Yes',knopsluit)
         switch gv.datatype
-            case 'Pupil Labs'
-                gv = rmfield(gv,'lp');
-                save(fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'.mat']),'gv');
             case 'Tobii Pro Glasses 2'
                 % get gazeCodes for GlasseViewer and write them to a text
                 % file
@@ -810,6 +917,9 @@ try
                 % 3. mark and type are already good, we're ready to save
                 coding = rmfield(gv.coding,{'outIdx','streamName'});
                 save(fullfile(gv.foldnaam,'coding.mat'),'-struct','coding');
+            otherwise
+                gv = rmfield(gv,'lp');
+                save(fullfile(gv.resdir,[gv.filmnaam '.mat']),'gv');
         end
         
         set(src,'closerequestfcn','closereq');
