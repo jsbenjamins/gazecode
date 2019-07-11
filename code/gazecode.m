@@ -848,9 +848,12 @@ switch gv.datatype
         if ~exist(tempresdir)
             mkdir(fullfile(gv.resdir,gv.partName,gv.recName));
         end
-        filenaam = fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'_',gv.coding.streamName, '.xls']);
+        streamName = gv.coding.streamName;
+        % remove invalid characters
+        streamName = regexprep(streamName,'[^\w\.!@#$^+=-]','_');   % remove characters invalid in Windows filename from stream name
+        filenaam = fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'_',streamName, '.xls']);
         while exist(filenaam,'file')
-            answer = inputdlg(['File: ', filenaam ,'.xls already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.recName,'_',gv.coding.streamName,'_01.xls']});
+            answer = inputdlg(['File: ''', filenaam ,''' already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.recName,'_',streamName,'_01.xls']});
             if isempty(answer)  % to prevent pressing cancel going wrong (TODO, kill cancel button)
                 disp('... saving cancelled');
                 return; % test this!
@@ -861,7 +864,7 @@ switch gv.datatype
     otherwise
         filenaam = fullfile(gv.resdir,[gv.filmnaam '.xls']);
         while exist(filenaam,'file')
-            answer = inputdlg(['File: ', filenaam ,'.xls already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.filmnaam '_01.xls']});
+            answer = inputdlg(['File: ''', filenaam ,''' already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.filmnaam '_01.xls']});
             if isempty(answer) % to prevent pressing cancel going wrong (TODO, kill cancel button)
                 % filenaam = filenaam;
                 disp('... saving cancelled');
