@@ -892,8 +892,12 @@ try
             case 'Tobii Pro Glasses 2'
                 % get gazeCodes for GlasseViewer and write them to a text
                 % file
+                streamName = gv.coding.streamName;
+                % remove invalid characters
+                streamName = regexprep(streamName,'[^\w\.!@#$^+=-]','_');   % remove characters invalid in Windows filename from stream name
+                fname = fullfile(gv.foldnaam,['gazeCodeCoding_' streamName '.txt']);
                 gazecodes = [gv.coding.mark{gv.coding.outIdx}(1:end-1)', gv.coding.type{gv.coding.outIdx}'];
-                fid = fopen(fullfile(gv.foldnaam,'gazeCodeCoding.txt'),'w');    % TODO: unieke naam per stream? lijkt me wel handig
+                fid = fopen(fname,'w');    % TODO: unieke naam per stream? lijkt me wel handig
                 fprintf(fid,'%f\t%d\n',gazecodes');
                 fclose(fid);
                 % also store to coding.mat
