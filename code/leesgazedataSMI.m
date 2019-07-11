@@ -1,4 +1,6 @@
-function [tijd,x,y] = leesgazedataSMI(filenaam)
+function [tijd,x,y,wcr] = leesgazedataSMI(filenaam)
+
+wcr = [960 720];
 
 fid     = fopen(filenaam);
 [fid,message] = fopen(filenaam);
@@ -33,24 +35,12 @@ tijd2(1)        = 0;
 tijd = tijd2;
 
 leftx           = dummy{:,10};
-% correct for data that is beyond the world camera
-leftx(leftx<0)      = NaN;
-leftx(leftx>wcr(1)) = NaN;
 lefty           = dummy{:,11};
-% correct for data that is beyond the world camera
-lefty(lefty<0)      = NaN;
-lefty(lefty>wcr(2)) = NaN;
 
 rightx          = dummy{:,12};
-% correct for data that is beyond the world camera
-rightx(rightx<0)      = NaN;
-rightx(rightx>wcr(1)) = NaN;
 righty          = dummy{:,13};
-% correct for data that is beyond the world camera
-righty(righty<0)      = NaN;
-righty(righty>wcr(2)) = NaN;
 
-x               = nanmean([leftx,rightx],2);
-y               = nanmean([lefty,righty],2);
+x               = mean([leftx,rightx],2);
+y               = mean([lefty,righty],2);
 
 disp(sprintf('%d lines of file %s processed',length(tijd),filenaam));

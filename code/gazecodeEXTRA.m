@@ -135,6 +135,12 @@ switch gv.datatype
     case 'Pupil Labs'
         gv.wcr = [1280 720]; % world cam resolution
         gv.ecr = [640 480]; % eye cam resolution
+    case 'SMI Glasses'
+        gv.wcr = [1280 960]; % world cam resolution, can also be 960 x 720
+        gv.ecr = [640 480]; % eye cam resolution (assumption, not known ATM)
+    case 'Positive Science'
+        gv.wcr = [640 480]; % world cam resolution, can also be 960 x 720
+        gv.ecr = [320 240]; % eye cam resolution (assumption, not known ATM)    
     case 'Tobii Pro Glasses 2'
         % this is in glassesViewer's export, at
         % data.video.scene.width, data.video.scene.height
@@ -381,6 +387,13 @@ switch gv.datatype
         gv.vidObj  = VideoReader([gv.foldnaam gv.fs 'exports' gv.fs hoeveelfilms.name gv.fs 'world_viz.mp4']);
     case 'Tobii Pro Glasses 2'
         gv.vidObj = VideoReader(gv.filmnaam);
+    
+    case 'SMI Glasses'
+        [videofile,videopath] = uigetfile('.avi','Select video file');
+        gv.vidObj = VideoReader([videopath gv.fs videofile]);
+    case 'Positive Science'
+        [videofile,videopath] = uigetfile('.mov','Select video file');
+        gv.vidObj = VideoReader([videopath gv.fs videofile]);
 end
 
 gv.fr       = get(gv.vidObj,'FrameRate');
@@ -451,7 +464,23 @@ if ~skipdataload
             % gv.coding.mark{1}
             % gv.coding.type{1}
             gv.coding.outIdx = 1;
-                    
+        case 'SMI Glasses'
+            [filenaam, filepad] = uigetfile('.txt','Select data file with fixations');
+            
+            % gv.wcr gets updated based om data as an extra safety measure
+            [gv.datt, gv.datx, gv.daty,gv.wcr] = leesgazedataSMI([filepad gv.fs filenaam]);
+            
+            gv.datx = gv.datx * gv.wcr(1) - gv.wcr(1)/2;
+            gv.daty = gv.daty * gv.wcr(2) - gv.wcr(2)/2;
+        case 'Positive Science'
+            [filenaam, filepad] = uigetfile('.txt','Select data file with fixations');
+            
+            % gv.wcr gets updated based om data as an extra safety measure
+            [gv.datt, gv.datx, gv.daty] = leesgazedataPosSci([filepad gv.fs filenaam]);
+            
+            gv.datx = gv.datx * gv.wcr(1) - gv.wcr(1)/2;
+            gv.daty = gv.daty * gv.wcr(2) - gv.wcr(2)/2;
+            
         case 'Tobii Pro Glasses 2'
             
             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
@@ -579,6 +608,12 @@ if ~skipdataload
     % times
     switch gv.datatype
         case 'Pupil Labs'
+            gv.bfr     = floor(fixB/frdur);
+            gv.efr     = ceil(fixE/frdur);
+        case 'SMI Glasses'
+            gv.bfr     = floor(fixB/frdur);
+            gv.efr     = ceil(fixE/frdur);
+        case 'Positive Science'
             gv.bfr     = floor(fixB/frdur);
             gv.efr     = ceil(fixE/frdur);
         case  'Tobii Pro Glasses 2'
