@@ -75,7 +75,6 @@ gv.cat7but = {'7','numpad7'};
 gv.cat8but = {'8','numpad8'};
 gv.cat9but = {'9','numpad9'};
 gv.catjbut = 'j';
-% gv.cat0but = {'0','numpad0'};
 
 
 %% directories and settings
@@ -130,7 +129,6 @@ close(gv.splashh);
 % more options. Question dialog allows for only three options
 models = {'Pupil Labs','Tobii Pro Glasses 2','SMI Glasses','Positive Science'};
 modelIdx = listdlg ('ListString', models,'SelectionMode', 'Single', 'PromptString', 'Select eye-tracker', 'Initialvalue', 2,'Cancelstring','Quit','ListSize',[160 160]);
-% gv.datatype = listdlg('What type of mobile eye-tracking data do you want to code?','Data type?','Pupil Labs','Tobii Pro Glasses 2','SMI Glasses','Positive Science','Pupil Labs');
 assert(~isempty(modelIdx),'You did not select a type of mobile eye-tracking data, exiting');
 
 gv.datatype = models{modelIdx};
@@ -323,7 +321,6 @@ gridpos     = [...
 gv.knoppen = [];
 
 for p = 1:size(gridpos,1)
-    %     gv.knoppen(p) = uicontrol(rp,'Style','pushbutton','HorizontalAlignment','left','string','','callback',@labelfix,'userdata',gv);
     gv.knoppen(p) = uicontrol(rp,'Style','pushbutton','HorizontalAlignment','left','string','','callback',@labelfix,'userdata',gv);
     set(gv.knoppen(p),'position',gridpos(p,:));
     set(gv.knoppen(p),'backgroundcolor',[1 1 1]);
@@ -426,8 +423,8 @@ if ~skipdataload
             
             % The line below determines fixations start and stop times since the
             % beginning of the recording. For this detection of fixations the algo-
-            % rithm of Hessels et (2019 submoitted), but this can be replaced by your own
-            % favourite or perhaps more suitable fixation detectioon algorithm.
+            % rithm of Hessels et (2019 submitted) is used, but this can be replaced
+            % by your own favourite or perhaps more suitable fixation detection algorithm.
             % Important is that this algorithm returns a vector that has fixation
             % start times at the odd and fixation end times at the even positions
             % of it.
@@ -453,8 +450,8 @@ if ~skipdataload
             
             % The line below determines fixations start and stop times since the
             % beginning of the recording. For this detection of fixations the algo-
-            % rithm of Hessels et (2019 submoitted), but this can be replaced by your own
-            % favourite or perhaps more suitable fixation detectioon algorithm.
+            % rithm of Hessels et (2019 submitted) is used, but this can be replaced
+            % by your own favourite or perhaps more suitable fixation detection algorithm.
             % Important is that this algorithm returns a vector that has fixation
             % start times at the odd and fixation end times at the even positions
             % of it.
@@ -496,8 +493,8 @@ if ~skipdataload
             
             % The line below determines fixations start and stop times since the
             % beginning of the recording. For this detection of fixations the algo-
-            % rithm of Hessels et (2019 submoitted), but this can be replaced by your own
-            % favourite or perhaps more suitable fixation detectioon algorithm.
+            % rithm of Hessels et (2019 submitted) is used, but this can be replaced
+            % by your own favourite or perhaps more suitable fixation detection algorithm.
             % Important is that this algorithm returns a vector that has fixation
             % start times at the odd and fixation end times at the even positions
             % of it.
@@ -523,7 +520,6 @@ if ~skipdataload
             if ~isempty(eventToCode)
                 assert(~isempty(gv.coding.type{streamIdx})&&any(gv.coding.type{streamIdx}==eventToCode),'Selected stream does not contain any events of the selected category. Nothing to code. Exiting.')
             end
-            
             
             % ask user where to store coding output
             [outStreamIdx,newStreamName] = outputStreamSelectorGUI(coding,streamIdx);
@@ -631,7 +627,7 @@ if ~skipdataload
                 qWhich = gv.coding.type{gv.coding.outIdx}>1;
                 assert(sum(qWhich)==size(gv.data,1),'internal error contact developer')
                 gv.data(:,end) = log2(gv.coding.type{gv.coding.outIdx}(qWhich))-1;
-                % added such that if previoulsy coded GazeCode will pickup at the
+                % added such that if previously coded, GazeCode will pickup at the
                 % last coded event.
                 gv.curfix = find(gv.data(:,end)>1, 1,'last');
             end
@@ -822,15 +818,7 @@ switch evt.Key
         labelfix(findobj('UserData',8),evt);
     case gv.cat9but
         labelfix(findobj('UserData',9),evt);
-        %      case gv.cat0but
-        %         % pushing command buttons also codes as 0, so check whether
-        %         % evt.Modifier is empty to discern a command key with key zero
-        %         if isempty(evt.Modifier)
-        %             labelfix(src,evt);
-        %         end
     case gv.catjbut
-        % pushing command buttons also codes as 0, so check whether
-        % evt.Modifier is empty to discern a command key with key zero
         welkefix = inputdlg('Jump to which event?','Jump',1,{num2str(gv.curfix)});
         if isempty(welkefix),return,end
         welkefix = str2num(welkefix{:});
@@ -860,11 +848,13 @@ switch gv.datatype
         if ~exist(tempresdir)
             mkdir(fullfile(gv.resdir,gv.partName,gv.recName));
         end
-        filenaam = fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'_',gv.coding.streamName, '.xls']);
+        streamName = gv.coding.streamName;
+        % remove invalid characters
+        streamName = regexprep(streamName,'[^\w\.!@#$^+=-]','_');   % remove characters invalid in Windows filename from stream name
+        filenaam = fullfile(gv.resdir,gv.partName,gv.recName,[gv.recName,'_',streamName, '.xls']);
         while exist(filenaam,'file')
-            answer = inputdlg(['File: ', filenaam ,'.xls already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.recName,'_',gv.coding.streamName,'_01.xls']});
+            answer = inputdlg(['File: ''', filenaam ,''' already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.recName,'_',streamName,'_01.xls']});
             if isempty(answer)  % to prevent pressing cancel going wrong (TODO, kill cancel button)
-                % filenaam = filenaam;
                 disp('... saving cancelled');
                 return; % test this!
             else
@@ -874,7 +864,7 @@ switch gv.datatype
     otherwise
         filenaam = fullfile(gv.resdir,[gv.filmnaam '.xls']);
         while exist(filenaam,'file')
-            answer = inputdlg(['File: ', filenaam ,'.xls already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.filmnaam '_01.xls']});
+            answer = inputdlg(['File: ''', filenaam ,''' already exists. Enter a new file name'],'Warning: file already exists',1,{[gv.filmnaam '_01.xls']});
             if isempty(answer) % to prevent pressing cancel going wrong (TODO, kill cancel button)
                 % filenaam = filenaam;
                 disp('... saving cancelled');
@@ -902,8 +892,12 @@ try
             case 'Tobii Pro Glasses 2'
                 % get gazeCodes for GlasseViewer and write them to a text
                 % file
+                streamName = gv.coding.streamName;
+                % remove invalid characters
+                streamName = regexprep(streamName,'[^\w\.!@#$^+=-]','_');   % remove characters invalid in Windows filename from stream name
+                fname = fullfile(gv.foldnaam,['gazeCodeCoding_' streamName '.txt']);
                 gazecodes = [gv.coding.mark{gv.coding.outIdx}(1:end-1)', gv.coding.type{gv.coding.outIdx}'];
-                fid = fopen(fullfile(gv.foldnaam,'gazeCodeCoding.txt'),'w');    % TODO: unieke naam per stream? lijkt me wel handig
+                fid = fopen(fname,'w');    % TODO: unieke naam per stream? lijkt me wel handig
                 fprintf(fid,'%f\t%d\n',gazecodes');
                 fclose(fid);
                 % also store to coding.mat
