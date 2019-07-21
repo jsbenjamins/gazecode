@@ -34,7 +34,7 @@ function gazecode(settings)
 
 %% start fresh
 clear all; close all; clc;
-qDEBUG = true;
+qDEBUG = false;
 if qDEBUG
     dbstop if error
 end
