@@ -62,7 +62,7 @@ for s=1:nRow
         selector.UserData.streamItems(s).FontWeight = 'bold';
     end
     if p==0
-        selector.UserData.editBox = uicomponent('Style','edit', 'Parent', selector,'Units','pixels','Position',[3+15+marginsB(2) 2*marginsB(3)+buttonSz(2) textBoxSz], 'HorizontalAlignment','left','KeyPressFcn',@(src,~) editBoxCB(src,selector));
+        selector.UserData.editBox = uicomponent('Style','edit', 'Parent', selector,'Units','pixels','Position',[3+15+marginsB(2) 2*marginsB(3)+buttonSz(2) textBoxSz], 'String','change me!','HorizontalAlignment','left','KeyPressFcn',@(src,~) editBoxCB(src,selector));
     end
 end
 
