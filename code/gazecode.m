@@ -824,7 +824,7 @@ switch evt.Key
         welkefix = str2num(welkefix{:});
         if isnumeric(welkefix)
             if isempty(welkefix)|| welkefix < 1 || welkefix > gv.maxfix
-                disp(sprintf('Wrong input! Use numbers between 1 and %d',gv.maxfix));
+                fprintf('Wrong input! Use numbers between 1 and %d\n',gv.maxfix);
             else
                 gv.curfix = welkefix;
                 set(src,'userdata',gv);
