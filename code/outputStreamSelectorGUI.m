@@ -65,6 +65,11 @@ for s=1:nRow
         selector.UserData.editBox = uicomponent('Style','edit', 'Parent', selector,'Units','pixels','Position',[3+15+marginsB(2) 2*marginsB(3)+buttonSz(2) textBoxSz], 'String','change me!','HorizontalAlignment','left','KeyPressFcn',@(src,~) editBoxCB(src,selector));
     end
 end
+if nRow==1 && isscalar(selector.UserData.streamItems)
+    % preselect if only one possible output, else easy to click button
+    % without selection causing execution to stop
+    selector.UserData.streamItems.Value = 1;
+end
 
 selector.Visible = 'on';
 uiwait(selector);
