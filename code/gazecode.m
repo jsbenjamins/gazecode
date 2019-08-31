@@ -917,7 +917,7 @@ try
         end
         
         set(src,'closerequestfcn','closereq');
-        rmpath(genpath(gv.rootdir));
+        rmpath(genpath(gv.rootdir),genpath(gv.glassesviewerdir));
         delete(src);
     else
         disp('Program not closed. Continuing.');
