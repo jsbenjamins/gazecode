@@ -34,7 +34,7 @@ function gazecode(settings)
 
 %% start fresh
 clear all; close all; clc;
-qDEBUG = true;
+qDEBUG = false;
 if qDEBUG
     dbstop if error
 end
@@ -824,7 +824,7 @@ switch evt.Key
         welkefix = str2num(welkefix{:});
         if isnumeric(welkefix)
             if isempty(welkefix)|| welkefix < 1 || welkefix > gv.maxfix
-                disp(sprintf('Wrong input! Use numbers between 1 and %d',gv.maxfix));
+                fprintf('Wrong input! Use numbers between 1 and %d\n',gv.maxfix);
             else
                 gv.curfix = welkefix;
                 set(src,'userdata',gv);
@@ -917,7 +917,7 @@ try
         end
         
         set(src,'closerequestfcn','closereq');
-        rmpath(genpath(gv.rootdir));
+        rmpath(genpath(gv.rootdir),genpath(gv.glassesviewerdir));
         delete(src);
     else
         disp('Program not closed. Continuing.');
