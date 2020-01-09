@@ -95,7 +95,7 @@
   [Niehorster, D.C., Hessels, R.S., and Benjamins, J.S. (2020).
   GlassesViewer: Open-source software for viewing and analyzing data from
   the Tobii Pro Glasses 2 eye tracker. Behavior Research Methods. doi:
-  10.3758/s13428-019-01314-1](https://doi.org/10.3758/s13428-019-01314-1)
+  10.3758/s13428-019-01314-1](https://link.springer.com/article/10.3758/s13428-019-01314-1)
  
   For more information, questions, or to check whether we have updated to a
   better version, e-mail: j.s.benjamins@uu.nl GazeCode is available from 
