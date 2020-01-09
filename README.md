@@ -1,15 +1,15 @@
   GazeCode (beta version)
   
   This software allows for fast and flexible manual classification of any
-  mobile eye-tracking data. Currently Pupil Labs and Tobii Pro Glasses 2 data 
-  are fully supported. The software loads an exported visualisation (video file) 
+  mobile eye-tracking data. Currently Pupil Labs, SMI, Positive Science and Tobii Pro Glasses 2 data 
+  are supported. The software loads an exported visualisation (video file) 
   and the data of a mobile eye-tracking measurement, runs a fixation
   detection algorithm (adaptation of Hooge and Camps, 2013, Frontiers in Psychology, 4,
   996) and offers a simple to use interface to browse through and
   categorise the detected fixations. This version is integrated with
   [GlassesViewer](https://github.com/dcnieho/GlassesViewer) to
   enable directly opening Tobii Pro Glasses 2 recordings as stored on the recording
-  unit's SD card. As such, GlassesViewer needs to be available to GazeCode.
+  unit's SD card (no visualisation export needed). As such, GlassesViewer needs to be available to GazeCode.
   The recommended way to make this work is to use the `git` tool to download GazeCode.
   Alternatively you can download GazeCode's components separately and place them in the
   right locations. Here are instructions for these two routes:
