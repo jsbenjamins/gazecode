@@ -1,4 +1,4 @@
-  GazeCode (beta version)
+  # GazeCode (beta version)
   
   This software allows for fast and flexible manual classification of any
   mobile eye-tracking data. Currently Pupil Labs, SMI, Positive Science and Tobii Pro Glasses 2 data 
