@@ -83,11 +83,11 @@
   This open-source toolbox has been developed by J.S. Benjamins, R.S. Hessels 
   and I.T.C. Hooge. When you use it, please cite:
  
-  Jeroen S. Benjamins, Roy S. Hessels, and Ignace T. C. Hooge. 2018. 
+  [Jeroen S. Benjamins, Roy S. Hessels, and Ignace T. C. Hooge. 2018. 
   Gazecode: open-source software for manual mapping of mobile eye-tracking 
   data. In Proceedings of the 2018 ACM Symposium on Eye Tracking Research & 
   Applications (ETRA '18). ACM, New York, NY, USA, Article 54, 4 pages. 
-  DOI: https://doi.org/10.1145/3204493.3204568
+  DOI: https://doi.org/10.1145/3204493.3204568](https://doi.org/10.1145/3204493.3204568)
 
   For importing data from Tobii Glasses 2, it uses
   [GlassesViewer](https://github.com/dcnieho/GlassesViewer). When
