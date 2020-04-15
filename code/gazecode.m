@@ -580,8 +580,8 @@ if ~skipdataload
             gv.daty = data.eye.binocular.gp(sel,2);
             
             gv.datt = gv.datt*1000;
-            gv.datx = gv.datx * data.video.scene.width;
-            gv.daty = gv.daty * data.video.scene.height;
+%             gv.datx = gv.datx * data.video.scene.width;
+%             gv.daty = gv.daty * data.video.scene.height;
             
         otherwise
             disp('Unknown data type, crashing in 3,2,1,...');
