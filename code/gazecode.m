@@ -629,7 +629,12 @@ if ~skipdataload
                 gv.data(:,end) = log2(gv.coding.type{gv.coding.outIdx}(qWhich))-1;
                 % added such that if previously coded, GazeCode will pickup at the
                 % last coded event.
-                gv.curfix = find(gv.data(:,end)>1, 1,'last');
+                % JSB: changed for the special case where somebody coded some data,
+                % but then resets all to zero and then closes.
+                wheretocontinue = find(gv.data(:,end)>1, 1,'last');
+                if ~isempty(wheretocontinue) 
+                    gv.curfix = wheretocontinue;
+                end
             end
         otherwise
             % do nothing
