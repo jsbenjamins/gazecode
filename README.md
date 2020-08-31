@@ -13,6 +13,15 @@
   The recommended way to make this work is to use the `git` tool to download GazeCode.
   Alternatively you can download GazeCode's components separately and place them in the
   right locations. Here are instructions for these two routes:
+  
+  Before you download anything, GazeCode and GlassesViewer run in Matlab. Make sure Matlab is installed.
+  
+  We know our software works with:
+  - Matlab 2017a, 2018b on Mac OSX 10.10.5, 10.14.3, and 10.14.6
+  - Matlab 2016a, 2018a, and 2019b on Windows 10
+  
+  (other combinations will probably work as well, but have not been tested).
+  
   1. Using Git
       1. install git from https://git-scm.org if you don't already have it. If you do not
        like using the command line/terminal, consider using a graphical git tool such as
@@ -104,7 +113,3 @@
   Most parts of GazeCode are licensed under the Creative Commons Attribution 
   4.0 (CC BY 4.0) license. Some functions are under MIT license, and some 
   may be under other licenses.
- 
-  Tested on:
-  - Matlab 2017a, 2018b on Mac OSX 10.10.5 and Max OSX 10.14.3
-  - Matlab 2016a, 2018a on Windows 10
