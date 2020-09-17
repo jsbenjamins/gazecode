@@ -326,9 +326,25 @@ for p = 1:size(gridpos,1)
     set(gv.knoppen(p),'backgroundcolor',[1 1 1]);
     set(gv.knoppen(p),'fontsize',20);
     set(gv.knoppen(p),'userdata',p);
-    imgData = imread([gv.catfoldnaam gv.fs num2str(p) '.png']);
-    imgData = imgData./maxall(imgData);
-    imgData = double(imgData);
+%     imgData = imread([gv.catfoldnaam gv.fs num2str(p) '.png']);
+%     imgData = imgData./maxall(imgData);
+%     imgData = double(imgData);
+      [imgData,cmap,a] = imread([gv.catfoldnaam gv.fs num2str(p) '.png']);
+      if ~isempty(cmap)
+          % if indexed image, turn into normal
+          cmap    = permute(cmap,[1 3 2]);
+          imgData  = reshape(cmap(imdata(:)+1,1,:),[size(imdata) 3]);
+          % don't think this occurs, but be safe in case it does
+          if isa(a,'uint8')
+              a = double(a)/255;
+          end
+      end
+%       imgData          = cat(3,imgData,a);  % add alpha channel, if any
+      if isa(imgData,'uint8')
+          imgData = double(imgData)/255;
+      elseif isa(imgData,'uint16')
+          imgData = double(imgData)/65535;
+      end
     set(gv.knoppen(p),'CData',imgData);
 end
 set(hm,'userdata',gv);
@@ -733,9 +749,9 @@ axis off;
 axis equal;
 
 
-disp(['Current fixation: ', num2str(gv.curfix),'/',num2str(gv.maxfix)]);
+disp(['Current event: ', num2str(gv.curfix),'/',num2str(gv.maxfix)]);
 
-set(gv.lp,'Title',['Current fixation: ' num2str(gv.curfix),'/',num2str(gv.maxfix) ]);
+set(gv.lp,'Title',['Current event: ' num2str(gv.curfix),'/',num2str(gv.maxfix) ]);
 hold(gv.frameas,'on');
 stip = scatter(gv.fixxpos(gv.curfix),gv.fixypos(gv.curfix),1000,'ro');
 set(stip,'MarkerEdgeColor',[0 0.85 1],'MarkerFaceAlpha',.65,'MarkerFaceColor',[0 0.85 1],'LineWidth',2);
