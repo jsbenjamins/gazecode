@@ -35,7 +35,7 @@
        cd gazecode
        git submodule update --init --recursive
        ```
-       If you have already cloned Titta but do not have the MatlabWebSocket submodule populated yet,
+       If you have already cloned GazeCode but do not have the GlassesViewer submodule populated yet,
        issuing the `git submodule update --init --recursive` command will take care of that.
   1. Manual download:
       1. First download GazeCode and place it, unzipped if necessary, in your preferred folder.
@@ -97,7 +97,7 @@
   data. Proceedings of the 2018 ACM Symposium on Eye Tracking Research & 
   Applications (ETRA '18). ACM, New York, NY, USA, Article 54. DOI: 10.1145/3204493.3204568](https://doi.org/10.1145/3204493.3204568)
 
-  For importing data from Tobii Glasses 2, it uses
+  For importing data from Tobii Glasses 2, GazeCode uses
   [GlassesViewer](https://github.com/dcnieho/GlassesViewer). When
   using this toolbox with Tobii Glasses data, please also cite 
   [Niehorster, D.C., Hessels, R.S., and Benjamins, J.S. (2020).
