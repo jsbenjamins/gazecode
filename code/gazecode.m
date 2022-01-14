@@ -666,8 +666,12 @@ if ~skipdataload
             % use frame time info from GlassesViewer's export
             [gv.bfr,gv.efr] = deal(nan(size(fixB)));
             for p=1:length(fixB)
-                gv.bfr(p) = find(data.video.scene.fts<=fixB(p)/1000,1,'last');
-                gv.efr(p) = find(data.video.scene.fts<=fixE(p)/1000,1,'last');
+                if fixB(p) < 0
+                    gv.bfr(p) = 1;
+                else
+                    gv.bfr(p) = find(data.video.scene.fts<=fixB(p)/1000,1,'last');
+                end
+                gv.efr(p) = find(data.video.scene.fts<=fixE(p)/1000,1,'last');       
             end
         otherwise
             gv.bfr     = floor(fixB/frdur);
