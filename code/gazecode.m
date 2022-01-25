@@ -75,6 +75,7 @@ gv.cat7but = {'7','numpad7'};
 gv.cat8but = {'8','numpad8'};
 gv.cat9but = {'9','numpad9'};
 gv.catjbut = 'j';
+gv.cattbut = 't';
 
 
 %% directories and settings
@@ -636,6 +637,12 @@ if ~skipdataload
     gv.data = [fixnr, fixB, fixE, fixD, xstart, ystart, xend, yend, xmean, xsd, ymean, ysd, fixlabel];
     gv.maxfix   = max(fixnr);
     
+    % added for time stamp search and labels
+    gv.maxtijd = max(gv.data(:,3));
+    gv.maxtijds = floor(gv.maxtijd/1000);
+    gv.maxtijdm = floor(gv.maxtijd/(1000*60));
+    gv.maxtijdstr = [pad(num2str(gv.maxtijdm),2,'0'),':',pad(num2str(gv.maxtijds),2,'0')];
+    
     switch gv.datatype
         case 'Tobii Pro Glasses 2'
             if outStreamIdx==streamIdx || qGazeCodeStream  % TODO: this is specific to Tobii code...
@@ -752,10 +759,14 @@ gv.frameas = gca;
 axis off;
 axis equal;
 
+temptijd = (gv.data(gv.curfix,2) + gv.data(gv.curfix,3))/2;
+gv.curfixtijds = floor(temptijd/1000);
+gv.curfixtijdm = floor(temptijd/(1000*60));
+gv.curfixtijdstr = [pad(num2str(gv.curfixtijdm),2,'0'),':',pad(num2str(gv.curfixtijds),2,'0')]
 
-disp(['Current event: ', num2str(gv.curfix),'/',num2str(gv.maxfix)]);
+disp(['Current event: ', num2str(gv.curfix),'/',num2str(gv.maxfix), ', Time: ', gv.curfixtijdstr, ', End time: ',gv.maxtijdstr]);
 
-set(gv.lp,'Title',['Current event: ' num2str(gv.curfix),'/',num2str(gv.maxfix) ]);
+set(gv.lp,'Title',['Current event: ', num2str(gv.curfix),'/',num2str(gv.maxfix), ', Time: ', gv.curfixtijdstr, ', End time: ',gv.maxtijdstr]);
 hold(gv.frameas,'on');
 stip = scatter(gv.fixxpos(gv.curfix),gv.fixypos(gv.curfix),1000,'ro');
 set(stip,'MarkerEdgeColor',[0 0.85 1],'MarkerFaceAlpha',.65,'MarkerFaceColor',[0 0.85 1],'LineWidth',2);
@@ -844,7 +855,7 @@ switch evt.Key
     case gv.cat9but
         labelfix(findobj('UserData',9),evt);
     case gv.catjbut
-        welkefix = inputdlg('Jump to which event?','Jump',1,{num2str(gv.curfix)});
+        welkefix = inputdlg('Jump to which event?','Jump event',1,{num2str(gv.curfix)});
         if isempty(welkefix),return,end
         welkefix = str2num(welkefix{:});
         if isnumeric(welkefix)
@@ -856,6 +867,24 @@ switch evt.Key
                 showmainfr(src,gv);
             end
         end
+    case gv.cattbut
+        welketijd = inputdlg(['Jump to which time (mm:ss)?, Max: ',gv.maxtijdstr],'Jump time',1,{'mm:ss'});
+        welketijd = strsplit(welketijd{:},':');
+        % currently only works for recordings under the hour, which is
+        % advised in any case
+        if length(welketijd) ~=2, disp('Non critical error: wrong time format, use mm:ss'); return,end
+        welketijdm = str2num(welketijd{1});
+        welketijds = str2num(welketijd{2});
+        if (welketijdm < 0) || (welketijdm > 59), disp('Non critical error: minutes should be between 0 and 59'); return,end 
+        if (welketijds < 0) || (welketijds > 59), disp('Non critical error: seconds should be between 0 and 59'); return,end 
+        
+        welketijd = welketijdm*60*1000 + welketijds*1000;
+        
+        if welketijd > max(gv.data(:,3)), disp('Non critical error: time chosen beyond end time of last event'); return, end
+        
+        gv.curfix = find(welketijd > gv.data(:,2) & welketijd < gv.data(:,3));        
+        set(src,'userdata',gv);
+        showmainfr(src,gv);  
     otherwise
         % disp('Unknown key pressed');
 end
