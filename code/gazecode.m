@@ -641,7 +641,7 @@ if ~skipdataload
     gv.maxtijd = max(gv.data(:,3));
     gv.maxtijds = floor(gv.maxtijd/1000);
     gv.maxtijdm = floor(gv.maxtijd/(1000*60));
-    gv.maxtijdstr = [pad(num2str(gv.maxtijdm),2,'0'),':',pad(num2str(gv.maxtijds),2,'0')];
+    gv.maxtijdstr = [pad(num2str(gv.maxtijdm),2,'left','0'),':',pad(num2str(gv.maxtijds),2,'left','0')];
     
     switch gv.datatype
         case 'Tobii Pro Glasses 2'
@@ -762,7 +762,7 @@ axis equal;
 temptijd = (gv.data(gv.curfix,2) + gv.data(gv.curfix,3))/2;
 gv.curfixtijds = floor(temptijd/1000);
 gv.curfixtijdm = floor(temptijd/(1000*60));
-gv.curfixtijdstr = [pad(num2str(gv.curfixtijdm),2,'0'),':',pad(num2str(gv.curfixtijds),2,'0')]
+gv.curfixtijdstr = [pad(num2str(gv.curfixtijdm),2,'left','0'),':',pad(num2str(gv.curfixtijds),2,'left','0')];
 
 disp(['Current event: ', num2str(gv.curfix),'/',num2str(gv.maxfix), ', Time: ', gv.curfixtijdstr, ', End time: ',gv.maxtijdstr]);
 
@@ -882,7 +882,12 @@ switch evt.Key
         
         if welketijd > max(gv.data(:,3)), disp('Non critical error: time chosen beyond end time of last event'); return, end
         
-        gv.curfix = find(welketijd > gv.data(:,2) & welketijd < gv.data(:,3));        
+        gv.curfix = find(welketijd > gv.data(:,2) & welketijd < gv.data(:,3));
+        % don't think this can actually happen, but better be safe than
+        % sorry
+        if length(gv.curfix) > 1
+            gv.curfix = gv.curfix(1);
+        end
         set(src,'userdata',gv);
         showmainfr(src,gv);  
     otherwise
