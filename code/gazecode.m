@@ -151,6 +151,9 @@ switch gv.datatype
 end
 
 %%
+% UI interface fix. On Mac/Unix title of dialog boxes is not displayed,
+% thus added an extra info pop-up with instruction;
+if ~ ispc; uiwait(msgbox('Select directory of categories','Info','modal')); end
 disp('Select directory of categories');
 gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
 clc;
@@ -160,6 +163,9 @@ assert(ischar(gv.catfoldnaam),'You did not select a categories directory, exitin
 switch gv.datatype
     case 'Tobii Pro Glasses 2'
         % do the selecor thing
+        % UI interface fix. On Mac/Unix title of dialog boxes is not displayed,
+        % thus added an extra info pop-up with instruction;
+        if ~ ispc; uiwait(msgbox('Select projects directory of SD card','Info','modal')); end
         disp('Select projects directory of SD card');
         selectedDir = uigetdir(gv.datadir,'Select projects directory of SD card');
         % adding disp as Mac does not show title of UI elements
@@ -197,6 +203,9 @@ switch gv.datatype
         gv.partName = participant.pa_info.Name;
         fclose(fid);
     otherwise
+        % UI interface fix. On Mac/Unix title of dialog boxes is not displayed,
+        % thus added an extra info pop-up with instruction;
+        if ~ ispc; uiwait(msgbox('Select data directory to code','Info','modal')); end
         disp('Select data directory to code');
         gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
         % adding disp as Mac does not show title of UI elements
