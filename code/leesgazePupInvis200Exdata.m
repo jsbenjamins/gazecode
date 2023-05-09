@@ -1,4 +1,4 @@
-function [tijd,x,y] = leesgazedata(filenaam)
+function [tijd,x,y] = leesgazePupInvis200Exdata(filenaam)
 
 fid     = fopen(filenaam);
 [fid,message] = fopen(filenaam);
@@ -14,7 +14,7 @@ end
 dummy = textscan(fid,[repmat('%f',1,21)],'delimiter',',');
 fclose(fid);
 
-tijd    = dummy{:,3};
+tijd    = dummy{:,1};
 x       = dummy{:,4};
 y       = dummy{:,5};
 

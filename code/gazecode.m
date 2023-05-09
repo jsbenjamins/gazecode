@@ -27,7 +27,7 @@ function gazecode(settings)
 % Most parts of GazeCode are licensed under the Creative Commons
 % Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT
 % license, and some may be under other licenses.
-%
+%xxx
 % Tested on:
 % Matlab 2017a, 2018b on Mac OSX 10.10.5 and Max OSX 10.14.3
 % Matlab 2016a, 2018a on Windows 10
@@ -45,6 +45,10 @@ end
 % set it to false. If coding from GlassesViewer exists it will be loaded
 % from there.
 dataIsCrap = false;
+
+%% HARDCODED
+
+resampleFreq = 200;
 
 %% ========================================================================
 % BIG NOTE: every variable that is needed somewhere in this code is stored
@@ -128,7 +132,7 @@ close(gv.splashh);
 
 % this is now a question dialog, but needs to be changed to a dropdown for
 % more options. Question dialog allows for only three options
-models = {'Pupil Labs','Tobii Pro Glasses 2','SMI Glasses','Positive Science'};
+models = {'Pupil Labs','Tobii Pro Glasses 2','Tobii Pro Glasses 3','SMI Glasses','Positive Science','Pupil Labs invisible (200 Hz)'};
 modelIdx = listdlg ('ListString', models,'SelectionMode', 'Single', 'PromptString', 'Select eye-tracker', 'Initialvalue', 2,'Cancelstring','Quit','ListSize',[160 160]);
 assert(~isempty(modelIdx),'You did not select a type of mobile eye-tracking data, exiting');
 
@@ -148,6 +152,13 @@ switch gv.datatype
         % this is in glassesViewer's export, at
         % data.video.scene.width, data.video.scene.height
         % data.video.eye.width, data.video.eye.height
+    case 'Tobii Pro Glasses 3'
+        % this is in glassesViewer's export, at
+        % data.video.scene.width, data.video.scene.height
+        % data.video.eye.width, data.video.eye.height    
+    case 'Pupil Labs invisible'
+        gv.wcr = [1088 1080];
+        gv.ecr = [1088 1080];
 end
 
 %%
@@ -202,6 +213,53 @@ switch gv.datatype
         participant = jsondecoder(fread(fid,inf,'*char').');
         gv.partName = participant.pa_info.Name;
         fclose(fid);
+     case 'Tobii Pro Glasses 3'
+        % do the selecor thing
+        % UI interface fix. On Mac/Unix title of dialog boxes is not displayed,
+        % thus added an extra info pop-up with instruction;
+        if ~ ispc; uiwait(msgbox('Select projects directory of SD card','Info','modal')); end
+        disp('Select projects directory of SD card');
+        selectedDir = uigetdir(gv.datadir,'Select projects directory of SD card');
+        % adding disp as Mac does not show title of UI elements
+        clc;
+        assert(ischar(selectedDir),'You did not select a data directory, exiting');
+        
+        if exist(fullfile(selectedDir,'segments'),'dir') && exist(fullfile(selectedDir,'recording.json'),'file')
+            % user selected what is very likely a recording's dir directly
+            recordingDir = selectedDir;
+        else
+            % assume this is a project dir. G2ProjectParser will fail if it is not
+            if ~exist(fullfile(selectedDir,'lookup.xls'),'file')
+                success = G3ProjectParser(selectedDir);
+                if ~success
+                    error('Could not find projects in the folder: %s',selectedDir);
+                end
+            end
+            recordingDir = recordingSelector(selectedDir);
+            if isempty(recordingDir)
+                return
+            end
+        end
+        
+        gv.foldnaam = recordingDir;
+        
+        filmnaam    = fullfile(gv.foldnaam,'scenevideo.mp4');
+        gv.filmnaam = filmnaam;
+      
+        gv.jsonfile = fullfile(gv.foldnaam, 'recording.g3');   
+        recording = jsondecoder(fileread(gv.jsonfile));
+    
+        gv.recName = recording.name;
+
+        % participant file may not exist
+        pFile = fullfile(gv.foldnaam,recording.meta_folder,'participant');
+        if ~~exist(pFile,"file")
+            gv.partName        = jsondecoder(fileread(pFile)).name;
+        end
+
+    case 'Pupil Labs invisible (200 Hz)'
+       % copy from landmark.m!
+
     otherwise
         % UI interface fix. On Mac/Unix title of dialog boxes is not displayed,
         % thus added an extra info pop-up with instruction;
@@ -389,8 +447,8 @@ tempy = lpaxpos(2);
 tempw = lpaxpos(3);
 temph = lpaxpos(4);
 
-tempw = tempw - mod(tempw,16);
-temph = (tempw/16) * 9;
+tempw = tempw - mod(tempw,11);
+temph = (tempw/11) * 10;
 
 tempx = floor((lpaxpos(3) - tempw)/2);
 tempy = lpaxpos(4)-temph;
@@ -528,8 +586,8 @@ if ~skipdataload
             disp('Determining fixations...');
             gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
             
-        case 'Tobii Pro Glasses 2'
-            
+        case 'Tobii Pro Glasses 3'
+            % TODO: should be readg3glasses...
             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
             data.quality        = computeDataQuality(gv.foldnaam, data, settings.dataQuality.windowLength);
             data.ui.haveEyeVideo = isfield(data.video,'eye');
@@ -608,7 +666,149 @@ if ~skipdataload
             gv.datt = gv.datt*1000;
 %             gv.datx = gv.datx * data.video.scene.width;
 %             gv.daty = gv.daty * data.video.scene.height;
+        case 'Tobii Pro Glasses 2'
             
+%             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
+            data                = readG2DataFiles(gv.foldnaam,settings.userStreams,qDEBUG);
+            data.quality        = computeDataQuality(gv.foldnaam, data, settings.dataQuality.windowLength);
+            data.ui.haveEyeVideo = isfield(data.video,'eye');
+            coding              = getCodingData(gv.foldnaam, '', settings.coding, data);
+            coding.dataIsCrap   = dataIsCrap;
+            gv.coding           = coding;
+            
+            % use coding from getCodingData.
+            [streamIdx,eventToCode] = streamSelectorGUI(gv.coding);
+            assert(~isempty(streamIdx),'You did not select a stream to code, exiting');
+            streams = find(coding.stream.available);
+            qGazeCodeStream = isfield(coding.settings.streams{streams(streamIdx)},'tag') && strcmp(coding.settings.streams{streams(streamIdx)}.tag,'gazeCodeStream');
+            assert(~isempty(streamIdx)||qGazeCodeStream,'You did not select an event to code, exiting')
+            if ~isempty(eventToCode)
+                assert(~isempty(gv.coding.type{streamIdx})&&any(gv.coding.type{streamIdx}==eventToCode),'Selected stream does not contain any events of the selected category. Nothing to code. Exiting.')
+            end
+            
+            % ask user where to store coding output
+            [outStreamIdx,newStreamName] = outputStreamSelectorGUI(coding,streamIdx);
+            assert(~isempty(outStreamIdx),'You did not select a stream for storing coding output, exiting');
+            gv.coding.outIdx        = outStreamIdx;
+            gv.coding.streamName    = newStreamName;
+            % make new coding stream for user's output if wanted
+            if outStreamIdx~=streamIdx
+                assert(isempty(newStreamName) || gv.coding.outIdx==length(gv.coding.mark)+1,'internal error, contact developer')
+                gv.coding.mark{gv.coding.outIdx}    = gv.coding.mark{streamIdx};
+                gv.coding.type{gv.coding.outIdx}    = gv.coding.type{streamIdx};
+            end
+            
+            % prep output stream, if not loading and editing existing
+            % stream or copying a GazeCode stream
+            if outStreamIdx~=streamIdx && ~qGazeCodeStream
+                % set everything not of interest to type 1 ('other')
+                gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}~=eventToCode) = 1;
+                % set everything of interest to type 2 ('uncoded')
+                gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}==eventToCode) = 2;
+                % merge adjacent, coding should not contain consecutive
+                % same events
+                iAdj = find(diff(gv.coding.type{gv.coding.outIdx})==0);
+                i=length(iAdj);
+                while i>0
+                    % find start and end of run of adjacent events
+                    e = iAdj(i)+1;
+                    s = iAdj(i);
+                    while i>1&&iAdj(i-1)==s-1
+                        i = i-1;
+                        s = iAdj(i);
+                    end
+                    gv.coding.mark{gv.coding.outIdx}(s+1:e) = [];
+                    gv.coding.type{gv.coding.outIdx}(s+1:e) = [];
+                    i=i-1;
+                end
+            end
+            
+            % get start and end marks of those events the user wanted to
+            % code
+            if outStreamIdx~=streamIdx && ~qGazeCodeStream
+                qEvents = gv.coding.type{gv.coding.outIdx}==2;
+            else
+                % include also already coded events, since we are reloading
+                % GazeCode session
+                qEvents = gv.coding.type{gv.coding.outIdx}>=2;
+            end
+            % fmark should contain start and end of each event to code, one
+            % after the other
+            iEvents = find(qEvents);
+            gv.fmark = reshape([gv.coding.mark{gv.coding.outIdx}(iEvents); gv.coding.mark{gv.coding.outIdx}(iEvents+1)]*1000,1,[]);  % s->ms
+            
+            % only select data from ts > 0, ts is nulled at onset scene camera!
+            sel = data.eye.binocular.ts >= data.time.startTime & data.eye.binocular.ts <= data.time.endTime;
+            
+            gv.datt = data.eye.binocular.ts(sel);
+            gv.datx = data.eye.binocular.gp(sel,1);
+            gv.daty = data.eye.binocular.gp(sel,2);
+            
+            gv.datt = gv.datt*1000;
+%             gv.datx = gv.datx * data.video.scene.width;
+%             gv.daty = gv.daty * data.video.scene.height;
+        case 'Pupil Labs invisible'
+%             cd(gv.foldnaam);
+            disp('Selecting data file with gaze positions...');
+%             [filenaam, filepad] = uigetfile('.csv','Select data file with gaze positions');
+%             clc;
+%             cd(gv.foldnaam);
+            
+            disp('Selecting data file with timestamps of world video');
+%             [filenaam2, filepad2] = uigetfile('.csv','Select data file with gaze positions');
+%             clc;
+%             cd(gv.codedir);
+                       
+            % this file reads the exported data file from Pupil Labs and gets time
+            % stamp and x and y coordinates
+            [gv.datt, gv.datx, gv.daty] = leesgazePupInvis200Exdata(fullfile(gv.foldnaam,'gaze_positions.csv'));
+            [gv.datwt] = leesTSPupInvis200Ex(fullfile(gv.foldnaam,'world_timestamps.csv'));
+            gv.datwt = gv.datwt*1000;
+            % recalculate absolute timestamps to time from onset (0 ms)
+            gv.datt = double(gv.datt);
+            gv.datt2 = gv.datt;
+%             gv.datt2(1) = 0;
+%             for p = 2:length(gv.datt)
+%                 gv.datt2(p) = gv.datt(p) - gv.datt(p-1);
+%                 gv.datt2(p) = gv.datt2(p) + gv.datt2(p-1);
+%             end
+            gv.datt2 = gv.datt2*1000;
+            gv.datt = gv.datt2;
+            
+            gv.datx(gv.datx > 1) = NaN;
+            gv.datx(gv.datx < 0) = NaN;
+            
+            gv.daty(gv.daty > 1) = NaN;
+            gv.daty(gv.daty < 0) = NaN;
+            
+            % deze eye tracker heeft een variabele sample frequentie. event
+            % detectie werkt beter met een vaste frequentie
+            [gv.datx, gv.datt2] = resample(gv.datx,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
+            [gv.daty, gv.datt2] = resample(gv.daty,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
+
+           
+            gv.datt = gv.datt2*1000.0; % mulitply with 1000 to go back to ms
+            
+            gv.datx = gv.datx * gv.wcr(1);
+%             gv.daty = gv.wcr(2) - gv.daty * gv.wcr(2);
+            gv.daty = gv.daty * gv.wcr(2);
+
+            gv.daty = gv.wcr(2) - gv.daty; % INVERT Y-COORDINATE
+
+            % determine start and end times of each fixation in one vector (odd
+            % number start times of fixations even number stop times)
+            
+            % The line below determines fixations start and stop times since the
+            % beginning of the recording. For this detection of fixations the algo-
+            % rithm of Hessels et (2019 submitted) is used, but this can be replaced
+            % by your own favourite or perhaps more suitable fixation detection algorithm.
+            % Important is that this algorithm returns a vector that has fixation
+            % start times at the odd and fixation end times at the even positions
+            % of it.
+            
+            disp('Determining fixations...');
+            gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+
         otherwise
             disp('Unknown data type, crashing in 3,2,1,...');
     end
@@ -689,6 +889,15 @@ if ~skipdataload
                 end
                 gv.efr(p) = find(data.video.scene.fts<=fixE(p)/1000,1,'last');       
             end
+
+        case  'Pupil Labs invisible'
+            % use world timestamps (in gv.datwt) for Pupil Player export
+            [gv.bfr,gv.efr] = deal(nan(size(fixB)));
+            for p=1:length(fixB)
+                gv.bfr(p) = find(gv.datwt<=fixB(p),1,'last');
+                gv.efr(p) = find(gv.datwt<=fixE(p),1,'last');       
+            end
+
         otherwise
             gv.bfr     = floor(fixB/frdur);
             gv.efr     = ceil(fixE/frdur);
