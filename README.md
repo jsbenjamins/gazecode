@@ -1,14 +1,14 @@
-  # GazeCode (beta version)
+  # GazeCode (GlassesViewer integrated + Pupil Labs Invisible supported version)
   
   This software allows for fast and flexible manual classification of any
-  mobile eye-tracking data. Currently Pupil Labs, SMI, Positive Science and Tobii Pro Glasses 2 data 
+  mobile eye-tracking data. Currently Pupil Labs, Pupil Labs Invisible, SMI, Positive Science and Tobii Pro Glasses 2 & 3 data 
   are supported. The software loads an exported visualisation (video file) 
   and the data of a mobile eye-tracking measurement, runs a fixation
   detection algorithm (adaptation of Hooge and Camps, 2013, Frontiers in Psychology, 4,
   996) and offers a simple to use interface to browse through and
   categorise the detected fixations. This version is integrated with
   [GlassesViewer](https://github.com/dcnieho/GlassesViewer) to
-  enable directly opening Tobii Pro Glasses 2 recordings as stored on the recording
+  enable directly opening Tobii Pro Glasses 2 and 3 recordings as stored on the recording
   unit's SD card (no visualisation export needed). As such, GlassesViewer needs to be available to GazeCode.
   The recommended way to make this work is to use the `git` tool to download GazeCode.
   Alternatively you can download GazeCode's components separately and place them in the
@@ -17,8 +17,8 @@
   Before you download anything, GazeCode and GlassesViewer run in Matlab. Make sure Matlab is installed.
   
   We know our software works with:
-  - Matlab 2017a, 2018b on Mac OSX 10.10.5, 10.14.3, and 10.14.6
-  - Matlab 2016a, 2018a, and 2019b on Windows 10
+  - Matlab 2021B on Mac OS 12.2.1 Monterey
+  - Matlab 2022b on Windows 11
   
   (other combinations will probably work as well, but have not been tested).
   
@@ -97,7 +97,7 @@
   data. Proceedings of the 2018 ACM Symposium on Eye Tracking Research & 
   Applications (ETRA '18). ACM, New York, NY, USA, Article 54. DOI: 10.1145/3204493.3204568](https://doi.org/10.1145/3204493.3204568)
 
-  For importing data from Tobii Glasses 2, GazeCode uses
+  For importing data from Tobii Glasses 2 & 3, GazeCode uses
   [GlassesViewer](https://github.com/dcnieho/GlassesViewer). When
   using this toolbox with Tobii Glasses data, please also cite 
   [Niehorster, D.C., Hessels, R.S., and Benjamins, J.S. (2020).

@@ -1,36 +1,38 @@
 function gazecode(settings)
 
-% GazeCode (beta version)
-%
+% GazeCode (GlassesViewer integrated + Pupil Labs Invisible supported version)
+% 
 % See readme.md for usage details
-%
+% 
 % This open-source toolbox has been developed by J.S. Benjamins, R.S.
 % Hessels and I.T.C. Hooge. When you use it, please cite:
-%
+% 
 % Jeroen S. Benjamins, Roy S. Hessels, and Ignace T. C. Hooge. 2018.
 % Gazecode: open-source software for manual mapping of mobile eye-tracking
 % data. In Proceedings of the 2018 ACM Symposium on Eye Tracking Research &
 % Applications (ETRA '18). ACM, New York, NY, USA, Article 54, 4 pages.
 % DOI: https://doi.org/10.1145/3204493.3204568
-%
-% For importing data from Tobii Glasses 2, it uses GlassesViewer. When
+% 
+% For importing data from Tobii Glasses 2 and 3, it uses GlassesViewer. When
 % using this toolbox with Tobii Glasses data, please also cite
-% Niehorster, D.C., Hessels, R.S., and Benjamins, J.S. (in prep).
+% Niehorster, D.C., Hessels, R.S., and Benjamins, J.S. (2020).
 % GlassesViewer: Open-source software for viewing and analyzing data from
-% the Tobii Pro Glasses 2 eye tracker.
-%
+% the Tobii Pro Glasses 2 eye tracker. Behavior Research Methods, 52,
+% 1244–1253.
+% DOI: https://doi.org/10.3758/s13428-019-01314-1
+% 
 % For more information, questions, or to check whether we have updated to a
 % better version, e-mail: j.s.benjamins@uu.nl. GazeCode is available from
 % www.github.com/jsbenjamins/gazecode and GlassesViewer from
 % https://github.com/dcnieho/glassesviewer
-%
+% 
 % Most parts of GazeCode are licensed under the Creative Commons
 % Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT
 % license, and some may be under other licenses.
-%xxx
+% 
 % Tested on:
-% Matlab 2017a, 2018b on Mac OSX 10.10.5 and Max OSX 10.14.3
-% Matlab 2016a, 2018a on Windows 10
+% Matlab 2021b on Mac OSX 12.2.1
+% Matlab 2022bx, on Windows 11
 
 %% start fresh
 clear all; close all; clc;
@@ -132,14 +134,14 @@ close(gv.splashh);
 
 % this is now a question dialog, but needs to be changed to a dropdown for
 % more options. Question dialog allows for only three options
-models = {'Pupil Labs','Tobii Pro Glasses 2','Tobii Pro Glasses 3','SMI Glasses','Positive Science','Pupil Labs invisible (200 Hz)'};
-modelIdx = listdlg ('ListString', models,'SelectionMode', 'Single', 'PromptString', 'Select eye-tracker', 'Initialvalue', 2,'Cancelstring','Quit','ListSize',[160 160]);
+models = {'Tobii Pro Glasses 2','Tobii Pro Glasses 3','Pupil Labs invisible (200 Hz)','Pupil Labs (first gen)','SMI Glasses','Positive Science'};
+modelIdx = listdlg ('ListString', models,'SelectionMode', 'Single', 'PromptString', 'Select eye-tracker', 'Initialvalue', 1,'Cancelstring','Quit','ListSize',[160 160]);
 assert(~isempty(modelIdx),'You did not select a type of mobile eye-tracking data, exiting');
 
 gv.datatype = models{modelIdx};
 % set camera settings of eye-tracker data
 switch gv.datatype
-    case 'Pupil Labs'
+    case 'Pupil Labs (first gen)'
         gv.wcr = [1280 720]; % world cam resolution
         gv.ecr = [640 480]; % eye cam resolution
     case 'SMI Glasses'
@@ -156,7 +158,7 @@ switch gv.datatype
         % this is in glassesViewer's export, at
         % data.video.scene.width, data.video.scene.height
         % data.video.eye.width, data.video.eye.height    
-    case 'Pupil Labs invisible'
+    case 'Pupil Labs invisible (200 hz)'
         gv.wcr = [1088 1080];
         gv.ecr = [1088 1080];
 end
@@ -178,7 +180,7 @@ switch gv.datatype
         % thus added an extra info pop-up with instruction;
         if ~ ispc; uiwait(msgbox('Select projects directory of SD card','Info','modal')); end
         disp('Select projects directory of SD card');
-        selectedDir = uigetdir(gv.datadir,'Select projects directory of SD card');
+        selectedDir = uigetdir(gv.datadir,'Select the PROJECTS directory of your SD card');
         % adding disp as Mac does not show title of UI elements
         clc;
         assert(ischar(selectedDir),'You did not select a data directory, exiting');
@@ -217,9 +219,9 @@ switch gv.datatype
         % do the selecor thing
         % UI interface fix. On Mac/Unix title of dialog boxes is not displayed,
         % thus added an extra info pop-up with instruction;
-        if ~ ispc; uiwait(msgbox('Select projects directory of SD card','Info','modal')); end
-        disp('Select projects directory of SD card');
-        selectedDir = uigetdir(gv.datadir,'Select projects directory of SD card');
+        if ~ ispc; uiwait(msgbox('Select the ROOT directory of your SD card','Info','modal')); end
+        disp('Select ROOT directory of SD card');
+        selectedDir = uigetdir(gv.datadir,'Select ROOT directory of SD card');
         % adding disp as Mac does not show title of UI elements
         clc;
         assert(ischar(selectedDir),'You did not select a data directory, exiting');
@@ -258,7 +260,37 @@ switch gv.datatype
         end
 
     case 'Pupil Labs invisible (200 Hz)'
-       % copy from landmark.m!
+       if ~ ispc; uiwait(msgbox('Select data directory to code','Info','modal')); end
+        disp('Select data directory to code');
+        gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
+        % adding disp as Mac does not show title of UI elements
+        clc;
+        assert(ischar(gv.foldnaam),'You did not select a data directory, exiting');
+        
+        filmnaam    = strsplit(gv.foldnaam,gv.fs);
+        gv.filmnaam    = filmnaam{end};
+        
+        gv.resdir = [gv.resdir gv.fs gv.filmnaam];
+
+        gv.foldnaam = fullfile(gv.foldnaam, 'exports','000');
+
+             
+        if exist([gv.resdir gv.fs gv.filmnaam '.mat']) > 0
+            oudofnieuw = questdlg(['There already is a results directory with a file for ',gv.filmnaam,'. Do you want to load previous results or start over? Starting over will overwrite previous results.'],'Folder already labeled?','Load previous','Start over','Load previous');
+            if strcmp(oudofnieuw,'Load previous')
+                % IMPORANT NOTE FOR TESTING! This reloads gv! Use start over when
+                % making changes to this file.
+                load([gv.resdir gv.fs gv.filmnaam '.mat']);
+                skipdataload = true;
+            else
+                rmdir(gv.resdir,'s');
+                mkdir(gv.resdir);
+            end
+        elseif exist(gv.resdir) == 0
+            mkdir(gv.resdir);
+        else
+            % do nothing
+        end
 
     otherwise
         % UI interface fix. On Mac/Unix title of dialog boxes is not displayed,
@@ -462,7 +494,7 @@ gv.lpaxpos = get(lpax,'position');
 % is default when exporting visualisations in Pupil Labs with a default
 % name of the file, Tobii Pro Glasses does not, so select it.
 switch gv.datatype
-    case 'Tobii Pro Glasses 2'
+    case {'Tobii Pro Glasses 2','Tobii Pro Glasses 3'}
         gv.vidObj = VideoReader(gv.filmnaam);
     otherwise
         cd(gv.foldnaam);
@@ -542,7 +574,7 @@ if ~skipdataload
             
             disp('Determining fixations...');
             gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
-        case 'Pupil Labs'
+        case 'Pupil Labs (first gen)'
             cd(gv.foldnaam);
             disp('Select data file with gaze positions');
             [filenaam, filepad] = uigetfile('.csv','Select data file with gaze positions');
@@ -585,91 +617,17 @@ if ~skipdataload
             
             disp('Determining fixations...');
             gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
-            
-        case 'Tobii Pro Glasses 3'
-            % TODO: should be readg3glasses...
-            data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
-            data.quality        = computeDataQuality(gv.foldnaam, data, settings.dataQuality.windowLength);
-            data.ui.haveEyeVideo = isfield(data.video,'eye');
-            coding              = getCodingData(gv.foldnaam, '', settings.coding, data);
-            coding.dataIsCrap   = dataIsCrap;
-            gv.coding           = coding;
-            
-            % use coding from getCodingData.
-            [streamIdx,eventToCode] = streamSelectorGUI(gv.coding);
-            assert(~isempty(streamIdx),'You did not select a stream to code, exiting');
-            streams = find(coding.stream.available);
-            qGazeCodeStream = isfield(coding.settings.streams{streams(streamIdx)},'tag') && strcmp(coding.settings.streams{streams(streamIdx)}.tag,'gazeCodeStream');
-            assert(~isempty(streamIdx)||qGazeCodeStream,'You did not select an event to code, exiting')
-            if ~isempty(eventToCode)
-                assert(~isempty(gv.coding.type{streamIdx})&&any(gv.coding.type{streamIdx}==eventToCode),'Selected stream does not contain any events of the selected category. Nothing to code. Exiting.')
-            end
-            
-            % ask user where to store coding output
-            [outStreamIdx,newStreamName] = outputStreamSelectorGUI(coding,streamIdx);
-            assert(~isempty(outStreamIdx),'You did not select a stream for storing coding output, exiting');
-            gv.coding.outIdx        = outStreamIdx;
-            gv.coding.streamName    = newStreamName;
-            % make new coding stream for user's output if wanted
-            if outStreamIdx~=streamIdx
-                assert(isempty(newStreamName) || gv.coding.outIdx==length(gv.coding.mark)+1,'internal error, contact developer')
-                gv.coding.mark{gv.coding.outIdx}    = gv.coding.mark{streamIdx};
-                gv.coding.type{gv.coding.outIdx}    = gv.coding.type{streamIdx};
-            end
-            
-            % prep output stream, if not loading and editing existing
-            % stream or copying a GazeCode stream
-            if outStreamIdx~=streamIdx && ~qGazeCodeStream
-                % set everything not of interest to type 1 ('other')
-                gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}~=eventToCode) = 1;
-                % set everything of interest to type 2 ('uncoded')
-                gv.coding.type{gv.coding.outIdx}(gv.coding.type{gv.coding.outIdx}==eventToCode) = 2;
-                % merge adjacent, coding should not contain consecutive
-                % same events
-                iAdj = find(diff(gv.coding.type{gv.coding.outIdx})==0);
-                i=length(iAdj);
-                while i>0
-                    % find start and end of run of adjacent events
-                    e = iAdj(i)+1;
-                    s = iAdj(i);
-                    while i>1&&iAdj(i-1)==s-1
-                        i = i-1;
-                        s = iAdj(i);
-                    end
-                    gv.coding.mark{gv.coding.outIdx}(s+1:e) = [];
-                    gv.coding.type{gv.coding.outIdx}(s+1:e) = [];
-                    i=i-1;
-                end
-            end
-            
-            % get start and end marks of those events the user wanted to
-            % code
-            if outStreamIdx~=streamIdx && ~qGazeCodeStream
-                qEvents = gv.coding.type{gv.coding.outIdx}==2;
-            else
-                % include also already coded events, since we are reloading
-                % GazeCode session
-                qEvents = gv.coding.type{gv.coding.outIdx}>=2;
-            end
-            % fmark should contain start and end of each event to code, one
-            % after the other
-            iEvents = find(qEvents);
-            gv.fmark = reshape([gv.coding.mark{gv.coding.outIdx}(iEvents); gv.coding.mark{gv.coding.outIdx}(iEvents+1)]*1000,1,[]);  % s->ms
-            
-            % only select data from ts > 0, ts is nulled at onset scene camera!
-            sel = data.eye.binocular.ts >= data.time.startTime & data.eye.binocular.ts <= data.time.endTime;
-            
-            gv.datt = data.eye.binocular.ts(sel);
-            gv.datx = data.eye.binocular.gp(sel,1);
-            gv.daty = data.eye.binocular.gp(sel,2);
-            
-            gv.datt = gv.datt*1000;
-%             gv.datx = gv.datx * data.video.scene.width;
-%             gv.daty = gv.daty * data.video.scene.height;
-        case 'Tobii Pro Glasses 2'
+
+        case {'Tobii Pro Glasses 2','Tobii Pro Glasses 3'}
             
 %             data                = getTobiiDataFromGlasses(gv.foldnaam,qDEBUG);
-            data                = readG2DataFiles(gv.foldnaam,settings.userStreams,qDEBUG);
+            if strcmp(gv.datatype,'Tobii Pro Glasses 2')
+                data                = readG2DataFiles(gv.foldnaam,settings.userStreams,qDEBUG);
+            elseif strcmp(gv.datatype,'Tobii Pro Glasses 3')
+                data                = readG3DataFiles(gv.foldnaam,settings.userStreams,qDEBUG);
+            else
+                assert((strcmp(gv.datatype,'Tobii Pro Glasses 2')|strcmp(gv.datatype,'Tobii Pro Glasses 3')),'Unknown Tobii Pro Glasses model. Exiting');
+            end
             data.quality        = computeDataQuality(gv.foldnaam, data, settings.dataQuality.windowLength);
             data.ui.haveEyeVideo = isfield(data.video,'eye');
             coding              = getCodingData(gv.foldnaam, '', settings.coding, data);
@@ -747,31 +705,18 @@ if ~skipdataload
             gv.datt = gv.datt*1000;
 %             gv.datx = gv.datx * data.video.scene.width;
 %             gv.daty = gv.daty * data.video.scene.height;
-        case 'Pupil Labs invisible'
-%             cd(gv.foldnaam);
-            disp('Selecting data file with gaze positions...');
-%             [filenaam, filepad] = uigetfile('.csv','Select data file with gaze positions');
-%             clc;
-%             cd(gv.foldnaam);
+        case 'Pupil Labs invisible (200Hz)'
             
-            disp('Selecting data file with timestamps of world video');
-%             [filenaam2, filepad2] = uigetfile('.csv','Select data file with gaze positions');
-%             clc;
-%             cd(gv.codedir);
-                       
-            % this file reads the exported data file from Pupil Labs and gets time
-            % stamp and x and y coordinates
+            disp('Selecting data file with gaze positions...');
             [gv.datt, gv.datx, gv.daty] = leesgazePupInvis200Exdata(fullfile(gv.foldnaam,'gaze_positions.csv'));
+
+            disp('Selecting data file with timestamps of world video');
             [gv.datwt] = leesTSPupInvis200Ex(fullfile(gv.foldnaam,'world_timestamps.csv'));
             gv.datwt = gv.datwt*1000;
             % recalculate absolute timestamps to time from onset (0 ms)
             gv.datt = double(gv.datt);
             gv.datt2 = gv.datt;
-%             gv.datt2(1) = 0;
-%             for p = 2:length(gv.datt)
-%                 gv.datt2(p) = gv.datt(p) - gv.datt(p-1);
-%                 gv.datt2(p) = gv.datt2(p) + gv.datt2(p-1);
-%             end
+
             gv.datt2 = gv.datt2*1000;
             gv.datt = gv.datt2;
             
@@ -781,8 +726,6 @@ if ~skipdataload
             gv.daty(gv.daty > 1) = NaN;
             gv.daty(gv.daty < 0) = NaN;
             
-            % deze eye tracker heeft een variabele sample frequentie. event
-            % detectie werkt beter met een vaste frequentie
             [gv.datx, gv.datt2] = resample(gv.datx,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
             [gv.daty, gv.datt2] = resample(gv.daty,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
 
@@ -790,11 +733,7 @@ if ~skipdataload
             gv.datt = gv.datt2*1000.0; % mulitply with 1000 to go back to ms
             
             gv.datx = gv.datx * gv.wcr(1);
-%             gv.daty = gv.wcr(2) - gv.daty * gv.wcr(2);
             gv.daty = gv.daty * gv.wcr(2);
-
-            gv.daty = gv.wcr(2) - gv.daty; % INVERT Y-COORDINATE
-
             % determine start and end times of each fixation in one vector (odd
             % number start times of fixations even number stop times)
             
@@ -808,7 +747,6 @@ if ~skipdataload
             
             disp('Determining fixations...');
             gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
-
         otherwise
             disp('Unknown data type, crashing in 3,2,1,...');
     end
@@ -853,7 +791,7 @@ if ~skipdataload
     gv.maxtijdstr = [pad(num2str(gv.maxtijdm),2,'left','0'),':',pad(num2str(gv.maxtijds),2,'left','0')];
     
     switch gv.datatype
-        case 'Tobii Pro Glasses 2'
+        case {'Tobii Pro Glasses 2','Tobii Pro Glasses 3'}
             if outStreamIdx==streamIdx || qGazeCodeStream  % TODO: this is specific to Tobii code...
                 % when loading existing file, put already coded labels into gv.data
                 qWhich = gv.coding.type{gv.coding.outIdx}>1;
@@ -878,7 +816,7 @@ if ~skipdataload
     % determine begin and end frame beloning to fixations start and end
     % times
     switch gv.datatype
-        case  'Tobii Pro Glasses 2'
+        case  {'Tobii Pro Glasses 2','Tobii Pro Glasses 3'}
             % use frame time info from GlassesViewer's export
             [gv.bfr,gv.efr] = deal(nan(size(fixB)));
             for p=1:length(fixB)
@@ -890,7 +828,7 @@ if ~skipdataload
                 gv.efr(p) = find(data.video.scene.fts<=fixE(p)/1000,1,'last');       
             end
 
-        case  'Pupil Labs invisible'
+        case  'Pupil Labs invisible (200 hz)'
             % use world timestamps (in gv.datwt) for Pupil Player export
             [gv.bfr,gv.efr] = deal(nan(size(fixB)));
             for p=1:length(fixB)
@@ -1128,7 +1066,7 @@ mm1 = get(src,'parent');
 hm = get(mm1,'parent');
 gv = get(hm,'userdata');
 switch gv.datatype
-    case 'Tobii Pro Glasses 2'
+    case {'Tobii Pro Glasses 2','Tobii Pro Glasses 3'}
         tempresdir = fullfile(gv.resdir,gv.partName,gv.recName);
         if ~exist(tempresdir)
             mkdir(fullfile(gv.resdir,gv.partName,gv.recName));
@@ -1174,7 +1112,7 @@ try
     knopsluit = questdlg('You''re about to close the program. Are you sure you''re done and want to quit?','Are you sure?','Yes','No','No');
     if strcmp('Yes',knopsluit)
         switch gv.datatype
-            case 'Tobii Pro Glasses 2'
+            case {'Tobii Pro Glasses 2','Tobii Pro Glasses 3'}
                 % get gazeCodes for GlasseViewer and write them to a text
                 % file
                 streamName = gv.coding.streamName;
