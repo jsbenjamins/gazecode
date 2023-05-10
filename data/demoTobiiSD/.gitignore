@@ -1,4 +1,5 @@
 *.mat
 *.txt
 livedata.json
-lookup.xls
+*.tslv
+*.tsv
