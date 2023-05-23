@@ -158,7 +158,7 @@ switch gv.datatype
         % this is in glassesViewer's export, at
         % data.video.scene.width, data.video.scene.height
         % data.video.eye.width, data.video.eye.height    
-    case 'Pupil Labs invisible (200 hz)'
+    case 'Pupil Labs invisible (200 Hz)'
         gv.wcr = [1088 1080];
         gv.ecr = [1088 1080];
 end
@@ -705,8 +705,7 @@ if ~skipdataload
             gv.datt = gv.datt*1000;
 %             gv.datx = gv.datx * data.video.scene.width;
 %             gv.daty = gv.daty * data.video.scene.height;
-        case 'Pupil Labs invisible (200Hz)'
-            
+        case 'Pupil Labs invisible (200 Hz)'
             disp('Selecting data file with gaze positions...');
             [gv.datt, gv.datx, gv.daty] = leesgazePupInvis200Exdata(fullfile(gv.foldnaam,'gaze_positions.csv'));
 
@@ -733,7 +732,8 @@ if ~skipdataload
             gv.datt = gv.datt2*1000.0; % mulitply with 1000 to go back to ms
             
             gv.datx = gv.datx * gv.wcr(1);
-            gv.daty = gv.daty * gv.wcr(2);
+            % flip vertical normilzed coordinates to match with video coordinates
+            gv.daty = gv.wcr(2) - gv.daty * gv.wcr(2);
             % determine start and end times of each fixation in one vector (odd
             % number start times of fixations even number stop times)
             
