@@ -583,7 +583,7 @@ if ~skipdataload
             
             % this file reads the exported data file from Pupil Labs and gets time
             % stamp and x and y coordinates
-            [gv.datt, gv.datx, gv.daty] = leesgazedata(filenaam);
+            [gv.datt, gv.datx, gv.daty] = leesgazedataPupFG(fullfile(filepad,filenaam));
             % recalculate absolute timestamps to time from onset (0 ms)
             gv.datt = double(gv.datt);
             gv.datt2 = gv.datt;
