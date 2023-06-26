@@ -10,8 +10,8 @@ skip = 1;                           % to skip header
 for p=1:skip,
     fgetl(fid);
 end
-
-dummy = textscan(fid,[repmat('%f',1,21)],'delimiter',',');
+% 2023-06-26: changed textscan string to circumvent issue with sixth column not being numerical in Pupil Labs FG and Core data
+dummy = textscan(fid,[repmat('%f',1,5),'%s',repmat('%f',1,15)],'delimiter',',');
 fclose(fid);
 
 tijd    = dummy{:,1};

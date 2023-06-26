@@ -9,7 +9,7 @@ switch eyetracker
         f.windowlength  = 8000;     % ms moving window average
         f.sf            = 50;       % sampling freq
         f.windowsize    = round(f.windowlength./(1000/f.sf)); % window size in samples
-    case 'Pupil Labs (first gen)'   % experimental, settings not thoroughly tested
+    case 'Pupil Labs (first gen + Core)'   % experimental, settings not thoroughly tested
         f.thr           = 5000;     % set very high
         f.counter       = 200;
         f.minfix        = 60;       % ms

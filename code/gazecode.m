@@ -134,14 +134,14 @@ close(gv.splashh);
 
 % this is now a question dialog, but needs to be changed to a dropdown for
 % more options. Question dialog allows for only three options
-models = {'Tobii Pro Glasses 2','Tobii Pro Glasses 3','Pupil Labs invisible (200 Hz)','Pupil Labs (first gen)','SMI Glasses','Positive Science'};
+models = {'Tobii Pro Glasses 2','Tobii Pro Glasses 3','Pupil Labs invisible (200 Hz)','Pupil Labs (first gen + Core)','SMI Glasses','Positive Science'};
 modelIdx = listdlg ('ListString', models,'SelectionMode', 'Single', 'PromptString', 'Select eye-tracker', 'Initialvalue', 1,'Cancelstring','Quit','ListSize',[160 160]);
 assert(~isempty(modelIdx),'You did not select a type of mobile eye-tracking data, exiting');
 
 gv.datatype = models{modelIdx};
 % set camera settings of eye-tracker data
 switch gv.datatype
-    case 'Pupil Labs (first gen)'
+    case 'Pupil Labs (first gen + Core)'
         gv.wcr = [1280 720]; % world cam resolution
         gv.ecr = [640 480]; % eye cam resolution
     case 'SMI Glasses'
@@ -574,7 +574,7 @@ if ~skipdataload
             
             disp('Determining fixations...');
             gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
-        case 'Pupil Labs (first gen)'
+        case 'Pupil Labs (first gen + Core)'
             cd(gv.foldnaam);
             disp('Select data file with gaze positions');
             [filenaam, filepad] = uigetfile('.csv','Select data file with gaze positions');
