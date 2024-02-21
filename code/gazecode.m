@@ -134,7 +134,7 @@ close(gv.splashh);
 
 % this is now a question dialog, but needs to be changed to a dropdown for
 % more options. Question dialog allows for only three options
-models = {'Tobii Pro Glasses 2','Tobii Pro Glasses 3','Pupil Labs invisible (200 Hz)','Pupil Labs (first gen + Core)','SMI Glasses','Positive Science'};
+models = {'Tobii Pro Glasses 2','Tobii Pro Glasses 3','Pupil Labs invisible (200 Hz)','Pupil Labs Neon (200 Hz)','Pupil Labs (first gen + Core)','SMI Glasses','Positive Science'};
 modelIdx = listdlg ('ListString', models,'SelectionMode', 'Single', 'PromptString', 'Select eye-tracker', 'Initialvalue', 1,'Cancelstring','Quit','ListSize',[160 160]);
 assert(~isempty(modelIdx),'You did not select a type of mobile eye-tracking data, exiting');
 
@@ -161,6 +161,9 @@ switch gv.datatype
     case 'Pupil Labs invisible (200 Hz)'
         gv.wcr = [1088 1080];
         gv.ecr = [1088 1080];
+    case 'Pupil Labs Neon (200 Hz)'
+        gv.wcr = [1600 1200];
+        gv.ecr = [192 192];
 end
 
 %%
@@ -169,7 +172,7 @@ end
 if ~ ispc; uiwait(msgbox('Select directory of categories','Info','modal')); end
 disp('Select directory of categories');
 gv.catfoldnaam    = uigetdir(gv.catdir,'Select directory of categories');
-clc;
+% clc;
 assert(ischar(gv.catfoldnaam),'You did not select a categories directory, exiting');
 
 %% load data folder
@@ -264,7 +267,7 @@ switch gv.datatype
         disp('Select data directory to code');
         gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
         % adding disp as Mac does not show title of UI elements
-        clc;
+%         clc;
         assert(ischar(gv.foldnaam),'You did not select a data directory, exiting');
         
         filmnaam    = strsplit(gv.foldnaam,gv.fs);
@@ -291,6 +294,38 @@ switch gv.datatype
         else
             % do nothing
         end
+    case 'Pupil Labs Neon (200 Hz)'
+       if ~ ispc; uiwait(msgbox('Select data directory to code','Info','modal')); end
+        disp('Select data directory to code');
+        gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
+        % adding disp as Mac does not show title of UI elements
+%         clc;
+        assert(ischar(gv.foldnaam),'You did not select a data directory, exiting');
+        
+        filmnaam    = strsplit(gv.foldnaam,gv.fs);
+        gv.filmnaam    = filmnaam{end};
+        
+        gv.resdir = [gv.resdir gv.fs gv.filmnaam];
+
+        gv.foldnaam = fullfile(gv.foldnaam);
+
+             
+        if exist([gv.resdir gv.fs gv.filmnaam '.mat']) > 0
+            oudofnieuw = questdlg(['There already is a results directory with a file for ',gv.filmnaam,'. Do you want to load previous results or start over? Starting over will overwrite previous results.'],'Folder already labeled?','Load previous','Start over','Load previous');
+            if strcmp(oudofnieuw,'Load previous')
+                % IMPORANT NOTE FOR TESTING! This reloads gv! Use start over when
+                % making changes to this file.
+                load([gv.resdir gv.fs gv.filmnaam '.mat']);
+                skipdataload = true;
+            else
+                rmdir(gv.resdir,'s');
+                mkdir(gv.resdir);
+            end
+        elseif exist(gv.resdir) == 0
+            mkdir(gv.resdir);
+        else
+            % do nothing
+        end    
 
     otherwise
         % UI interface fix. On Mac/Unix title of dialog boxes is not displayed,
@@ -299,7 +334,7 @@ switch gv.datatype
         disp('Select data directory to code');
         gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
         % adding disp as Mac does not show title of UI elements
-        clc;
+%         clc;
         assert(ischar(gv.foldnaam),'You did not select a data directory, exiting');
         
         filmnaam    = strsplit(gv.foldnaam,gv.fs);
@@ -327,7 +362,7 @@ end
 
 %% init main screen, don't change this section if you're not sure what you are doing
 hm          = figure('Name','GazeCode','NumberTitle','off','Visible','off');
-hmmar       = [150 100];
+hmmar       = [100 50];
 
 set(hm, 'Units', 'pixels');
 ws          = truescreensize();
@@ -500,11 +535,11 @@ switch gv.datatype
         cd(gv.foldnaam);
         disp('Select the video file');
         [videofile,videopath] = uigetfile('*.asf;*.asx;*.avi;*.m4v;*.mj2;*.mov;*.mp4;*.mpg;*.wmv;','Select video file');
-        clc;
+%         clc;
         cd(gv.codedir);
         disp('loading video file...')
         gv.vidObj = VideoReader([videopath gv.fs videofile]);
-        clc;
+%         clc;
 end
 
 gv.fr       = get(gv.vidObj,'FrameRate');
@@ -529,7 +564,7 @@ if ~skipdataload
             cd(gv.foldnaam);
             disp('Select data file with gaze positions');
             [filenaam, filepad] = uigetfile('.txt','Select data file with gaze positions');
-            clc;
+%             clc;
             cd(gv.codedir);
             % gv.wcr gets updated based om data as an extra safety measure
             [gv.datt, gv.datx, gv.daty] = leesgazedataSMI([filepad gv.fs filenaam]);
@@ -555,7 +590,7 @@ if ~skipdataload
             cd(gv.foldnaam);
             disp('Select data file with gaze positions');
             [filenaam, filepad] = uigetfile('.txt','Select data file with gaze positions');
-            clc;
+%             clc;
             cd(gv.codedir);
             
             % gv.wcr gets updated based om data as an extra safety measure
@@ -578,7 +613,7 @@ if ~skipdataload
             cd(gv.foldnaam);
             disp('Select data file with gaze positions');
             [filenaam, filepad] = uigetfile('.csv','Select data file with gaze positions');
-            clc;
+%             clc;
             cd(gv.codedir);
             
             % this file reads the exported data file from Pupil Labs and gets time
@@ -711,11 +746,18 @@ if ~skipdataload
 
             disp('Selecting data file with timestamps of world video');
             [gv.datwt] = leesTSPupInvis200Ex(fullfile(gv.foldnaam,'world_timestamps.csv'));
+            % convert to ms
             gv.datwt = gv.datwt*1000;
             % recalculate absolute timestamps to time from onset (0 ms)
             gv.datt = double(gv.datt);
             gv.datt2 = gv.datt;
-
+            gv.datt2(1) = 0;
+            for p = 2:length(gv.datt)
+                gv.datt2(p) = gv.datt(p) - gv.datt(p-1);
+                gv.datt2(p) = gv.datt2(p) + gv.datt2(p-1);
+            end
+            
+            % convert to ms
             gv.datt2 = gv.datt2*1000;
             gv.datt = gv.datt2;
             
@@ -734,6 +776,67 @@ if ~skipdataload
             gv.datx = gv.datx * gv.wcr(1);
             % flip vertical normilzed coordinates to match with video coordinates
             gv.daty = gv.wcr(2) - gv.daty * gv.wcr(2);
+            % determine start and end times of each fixation in one vector (odd
+            % number start times of fixations even number stop times)
+            
+            % The line below determines fixations start and stop times since the
+            % beginning of the recording. For this detection of fixations the algo-
+            % rithm of Hessels et (2019 submitted) is used, but this can be replaced
+            % by your own favourite or perhaps more suitable fixation detection algorithm.
+            % Important is that this algorithm returns a vector that has fixation
+            % start times at the odd and fixation end times at the even positions
+            % of it.
+            
+            disp('Determining fixations...');
+            gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+        case 'Pupil Labs Neon (200 Hz)'
+            disp('Selecting data file with gaze positions...');
+            [gv.datt, gv.datx, gv.daty] = leesgazePupNeon200data(fullfile(gv.foldnaam,'gaze.csv'));
+            
+            % from nano to s
+            gv.datt = gv.datt/1000000000;
+            disp('Selecting data file with timestamps of world video');
+            [gv.datwt] = leesTSPupNeon200(fullfile(gv.foldnaam,'world_timestamps.csv'));
+            % convert to s
+            gv.datwt = gv.datwt/1000000000;
+            gv.worldgazeTdiff = gv.datt(1) - gv.datwt(1);
+%             gv.datwt(1) = 0
+%             for p = 2:length(gv.datwt)
+%                 gv.datwt(p) = gv.datwt(p) - gv.datt(p-1);
+%                 gv.datt2(p) = gv.datt2(p) + gv.datt2(p-1);
+%             end
+            % recalculate absolute timestamps to time from onset (0 ms)
+            gv.datt = double(gv.datt);
+            gv.datt2 = gv.datt;
+            gv.datt2(1) = 0;
+            for p = 2:length(gv.datt)
+                gv.datt2(p) = gv.datt(p) - gv.datt(p-1);
+                gv.datt2(p) = gv.datt2(p) + gv.datt2(p-1);
+            end
+            
+            % if world timestamps start earlier, set first gaze time stamps
+            % to difference between first world time stamps and first gaze
+            % timestamp as movie gaze is projected onto movie
+            gv.datt2 = gv.datt2 + gv.worldgazeTdiff;
+
+            % convert to ms
+            gv.datt2 = gv.datt2*1000;
+            gv.datt = gv.datt2;
+            
+            gv.datx(gv.datx > 1600) = NaN;
+            gv.datx(gv.datx < 0) = NaN;
+            
+            gv.daty(gv.daty > 1200) = NaN;
+            gv.daty(gv.daty < 0) = NaN;
+            
+            [gv.datx, gv.datt2] = resample(gv.datx,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
+            [gv.daty, gv.datt2] = resample(gv.daty,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
+
+             gv.datt = gv.datt2*1000.0; % mulitply with 1000 to go back to ms
+            
+%             gv.datx = gv.datx * gv.wcr(1);
+%             % flip vertical normilzed coordinates to match with video coordinates
+%             gv.daty = gv.wcr(2) - gv.daty * gv.wcr(2);
             % determine start and end times of each fixation in one vector (odd
             % number start times of fixations even number stop times)
             
@@ -828,13 +931,13 @@ if ~skipdataload
                 gv.efr(p) = find(data.video.scene.fts<=fixE(p)/1000,1,'last');       
             end
 
-        case  'Pupil Labs invisible (200 hz)'
-            % use world timestamps (in gv.datwt) for Pupil Player export
-            [gv.bfr,gv.efr] = deal(nan(size(fixB)));
-            for p=1:length(fixB)
-                gv.bfr(p) = find(gv.datwt<=fixB(p),1,'last');
-                gv.efr(p) = find(gv.datwt<=fixE(p),1,'last');       
-            end
+%         case  {'Pupil Labs invisible (200 Hz)'}
+%             % use world timestamps (in gv.datwt) for Pupil Player export
+%             [gv.bfr,gv.efr] = deal(nan(size(fixB)));
+%             for p=1:length(fixB)
+%                 gv.bfr(p) = find(gv.datwt<=fixB(p),1,'last');
+%                 gv.efr(p) = find(gv.datwt<=fixE(p),1,'last');       
+%             end
 
         otherwise
             gv.bfr     = floor(fixB/frdur);
