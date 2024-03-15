@@ -545,6 +545,7 @@ switch gv.datatype
             % now assuming just one pause
             gv.vidObj = VideoReader(gv.filmnaam{1});
             gv.vidObj2 = VideoReader(gv.filmnaam{2});
+            gv.maxframe2 = get(gv.vidObj2,'NumberOfFrames');
         else
             gv.vidObj = VideoReader(gv.filmnaam);
         end
@@ -1046,10 +1047,23 @@ end
 function showmainfr(hm,gv)
 if ~isempty(gv.multfilm)
     if gv.whichfilm(gv.curfix) == 1
-        plaat = read(gv.vidObj,gv.mfr(gv.curfix));
+        try
+            plaat = read(gv.vidObj,gv.mfr(gv.curfix));
+        catch
+            warning('Could not find video frame, perhaps paused, showing nothing');
+            plaat = read(gv.vidObj,1);
+            plaat = zeros(size(plaat));
+        end
     elseif gv.whichfilm(gv.curfix) == 2
-        plaat = read(gv.vidObj2,gv.mfr(gv.curfix));
+        try
+            plaat = read(gv.vidObj2,gv.mfr(gv.curfix));
+        catch
+            warning('Could not find video frame, perhaps paused, showing nothing');
+            plaat = read(gv.vidObj,1);
+            plaat = zeros(size(plaat));
+        end
     else
+        warning('fixation not in one of the scene camera segments, showing nothing')
         plaat = read(gv.vidObj,1);
         plaat = zeros(size(plaat));
     end
