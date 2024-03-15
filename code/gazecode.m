@@ -209,6 +209,17 @@ switch gv.datatype
         
         filmnaam    = fullfile(gv.foldnaam,'segments','1','fullstream.mp4');
         gv.filmnaam = filmnaam;
+        if length(folderfromfolder(fullfile(gv.foldnaam,'segments'))) > 1
+            gv.filmnaam = {};
+            disp('multiple segments');
+            subfoldernames = folderfromfolder(fullfile(gv.foldnaam,'segments'));
+            for ft = 1:length(subfoldernames)
+                disp(ft);
+                filmnaam = fullfile(gv.foldnaam,'segments',subfoldernames(ft).name,'fullstream.mp4');
+                gv.filmnaam{ft} = filmnaam;
+            end
+            gv.multfilm = 1;
+        end
         
         fid = fopen(fullfile(gv.foldnaam,'recording.json'),'rt');
         recording = jsondecoder(fread(fid,inf,'*char').');
@@ -530,7 +541,13 @@ gv.lpaxpos = get(lpax,'position');
 % name of the file, Tobii Pro Glasses does not, so select it.
 switch gv.datatype
     case {'Tobii Pro Glasses 2','Tobii Pro Glasses 3'}
-        gv.vidObj = VideoReader(gv.filmnaam);
+        if ~isempty(gv.multfilm)
+            % now assuming just one pause
+            gv.vidObj = VideoReader(gv.filmnaam{1});
+            gv.vidObj2 = VideoReader(gv.filmnaam{2});
+        else
+            gv.vidObj = VideoReader(gv.filmnaam);
+        end
     otherwise
         cd(gv.foldnaam);
         disp('Select the video file');
@@ -884,6 +901,68 @@ if ~skipdataload
         fixD = fixD';
     end
     
+    
+    % determine begin and end frame beloning to fixations start and end
+    % times
+    switch gv.datatype
+        case  {'Tobii Pro Glasses 2','Tobii Pro Glasses 3'}
+            % use frame time info from GlassesViewer's export
+            [gv.bfr,gv.efr] = deal(nan(size(fixB)));
+            for p=1:length(fixB)
+                if fixB(p) < 0
+                    gv.bfr(p) = 1;
+                else
+                    gv.bfr(p) = find(data.video.scene.fts<=fixB(p)/1000,1,'last');
+                end
+                gv.efr(p) = find(data.video.scene.fts<=fixE(p)/1000,1,'last');       
+            end
+
+%         case  {'Pupil Labs invisible (200 Hz)'}
+%             % use world timestamps (in gv.datwt) for Pupil Player export
+%             [gv.bfr,gv.efr] = deal(nan(size(fixB)));
+%             for p=1:length(fixB)
+%                 gv.bfr(p) = find(gv.datwt<=fixB(p),1,'last');
+%                 gv.efr(p) = find(gv.datwt<=fixE(p),1,'last');       
+%             end
+
+        otherwise
+            gv.bfr     = floor(fixB/frdur);
+            gv.efr     = ceil(fixE/frdur);
+    end
+    gv.bfr(gv.bfr<1) = 1;
+    gv.efr(gv.efr<1) = 1;
+
+    if ~isempty(gv.multfilm)
+        % now assuming just one pause...
+        gv.whichfilm = zeros(size(gv.bfr));
+        gv.whichfilm(1:find(gv.efr<=data.video.scene.segframes(1) & gv.efr-gv.bfr>0,1,'last')) = 1;
+        gv.whichfilm(find(gv.bfr>=data.video.scene.segframes(2) & gv.efr-gv.bfr>0,1,'first'):end) = 2;
+
+        
+        gv.bfr(gv.whichfilm ==2) = gv.bfr(gv.whichfilm == 2)  - data.video.scene.segframes(2);
+        gv.efr(gv.whichfilm ==2) = gv.efr(gv.whichfilm == 2)  - data.video.scene.segframes(2);
+        
+    else
+        gv.bfr(gv.bfr>gv.maxframe) = gv.maxframe;
+        gv.efr(gv.efr>gv.maxframe) = gv.maxframe;
+    end
+
+
+    
+    % determine the frame between beginning and end frame for a fixations,
+    % this one will be displayed
+    gv.mfr = floor((gv.bfr+gv.efr)/2);
+    
+    % needed for marker in scene camera
+    gv.fixxpos = xmean;
+    gv.fixypos = ymean;
+    
+    gv.fixxposB = xstart;
+    gv.fixyposB = ystart;
+    
+    gv.fixxposE = xend;
+    gv.fixyposE = yend;
+
     gv.data = [fixnr, fixB, fixE, fixD, xstart, ystart, xend, yend, xmean, xsd, ymean, ysd, fixlabel];
     gv.maxfix   = max(fixnr);
     
@@ -915,53 +994,6 @@ if ~skipdataload
     
     set(hm,'userdata',gv);
     disp('... done');
-    
-    % determine begin and end frame beloning to fixations start and end
-    % times
-    switch gv.datatype
-        case  {'Tobii Pro Glasses 2','Tobii Pro Glasses 3'}
-            % use frame time info from GlassesViewer's export
-            [gv.bfr,gv.efr] = deal(nan(size(fixB)));
-            for p=1:length(fixB)
-                if fixB(p) < 0
-                    gv.bfr(p) = 1;
-                else
-                    gv.bfr(p) = find(data.video.scene.fts<=fixB(p)/1000,1,'last');
-                end
-                gv.efr(p) = find(data.video.scene.fts<=fixE(p)/1000,1,'last');       
-            end
-
-%         case  {'Pupil Labs invisible (200 Hz)'}
-%             % use world timestamps (in gv.datwt) for Pupil Player export
-%             [gv.bfr,gv.efr] = deal(nan(size(fixB)));
-%             for p=1:length(fixB)
-%                 gv.bfr(p) = find(gv.datwt<=fixB(p),1,'last');
-%                 gv.efr(p) = find(gv.datwt<=fixE(p),1,'last');       
-%             end
-
-        otherwise
-            gv.bfr     = floor(fixB/frdur);
-            gv.efr     = ceil(fixE/frdur);
-    end
-    gv.bfr(gv.bfr<1) = 1;
-    gv.bfr(gv.bfr>gv.maxframe) = gv.maxframe;
-    
-    gv.efr(gv.efr<1) = 1;
-    gv.efr(gv.efr>gv.maxframe) = gv.maxframe;
-    
-    % determine the frame between beginning and end frame for a fixations,
-    % this one will be displayed
-    gv.mfr = floor((gv.bfr+gv.efr)/2);
-    
-    % needed for marker in scene camera
-    gv.fixxpos = xmean;
-    gv.fixypos = ymean;
-    
-    gv.fixxposB = xstart;
-    gv.fixyposB = ystart;
-    
-    gv.fixxposE = xend;
-    gv.fixyposE = yend;
     
     set(hm,'userdata',gv);
 end
@@ -1012,7 +1044,18 @@ end
 
 % function to show the current frame and fixation being labeled
 function showmainfr(hm,gv)
-plaat = read(gv.vidObj,gv.mfr(gv.curfix));
+if ~isempty(gv.multfilm)
+    if gv.whichfilm(gv.curfix) == 1
+        plaat = read(gv.vidObj,gv.mfr(gv.curfix));
+    elseif gv.whichfilm(gv.curfix) == 2
+        plaat = read(gv.vidObj2,gv.mfr(gv.curfix));
+    else
+        plaat = read(gv.vidObj,1);
+        plaat = zeros(size(plaat));
+    end
+else
+    plaat = read(gv.vidObj,gv.mfr(gv.curfix));
+end
 imagesc(plaat);
 gv.frameas = gca;
 axis off;
