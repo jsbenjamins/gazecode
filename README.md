@@ -1,7 +1,7 @@
   # GazeCode (GlassesViewer integrated + Pupil Labs Invisible supported version)
   
   This software allows for fast and flexible manual classification of any
-  mobile eye-tracking data. Currently Pupil Labs, Pupil Labs Invisible, SMI, Positive Science and Tobii Pro Glasses 2 & 3 data 
+  mobile eye-tracking data. Currently Pupil Labs, Pupil Labs Invisible, Pupil Labs Neon, SMI, Positive Science and Tobii Pro Glasses 2 & 3 data 
   are supported. The software loads an exported visualisation (video file) 
   and the data of a mobile eye-tracking measurement, runs a fixation
   detection algorithm (adaptation of Hooge and Camps, 2013, Frontiers in Psychology, 4,
