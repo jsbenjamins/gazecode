@@ -1,4 +1,4 @@
-function [tijd,x,y] = leesgazedata(filenaam)
+function [tijd,x,y] = leesgazePupNeon200data(filenaam)
 
 fid     = fopen(filenaam);
 [fid,message] = fopen(filenaam);
@@ -11,12 +11,11 @@ for p=1:skip,
     fgetl(fid);
 end
 
-dummy = textscan(fid,[repmat('%f',1,21)],'delimiter',',');
+dummy = textscan(fid,['%s%s',repmat('%f',1,8)],'delimiter',',');
 fclose(fid);
 
 tijd    = dummy{:,3};
 x       = dummy{:,4};
 y       = dummy{:,5};
-
 
 disp(sprintf('%d lines of file %s processed',length(tijd),filenaam));

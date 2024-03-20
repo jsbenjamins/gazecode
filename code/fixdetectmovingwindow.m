@@ -35,7 +35,7 @@ for b=1:maxwinstart
     tempv   = dat.v(b:b+f.windowsize-1); % get vel
     
     % get fixation-classification threshold
-    thrfinal = detectfixaties2018thr(tempv,f);
+    thrfinal = detectfixaties2022thr(tempv,f);
     
     if b==1
         thr = thrfinal;
