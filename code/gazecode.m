@@ -128,6 +128,7 @@ if nargin<1 || isempty(settings)
 end
 
 gv.splashh = gazesplash([gv.appdir gv.fs 'splash.png']);
+gv.pauseplaat = imread(fullfile(gv.appdir, 'videopause.png'));
 pause(1);
 close(gv.splashh);
 %% Select type of data you want to code (currently a version for Pupil Labs and Tobii Pro Glasses are implemented
@@ -1063,9 +1064,8 @@ if ~isempty(gv.multfilm)
             plaat = zeros(size(plaat));
         end
     else
-        warning('fixation not in one of the scene camera segments, showing nothing')
-        plaat = read(gv.vidObj,1);
-        plaat = zeros(size(plaat));
+        warning(['event ' , num2str(gv.curfix),'/',num2str(gv.maxfix),' not in one of the scene camera segments, scene camera paused, showing nothing'])
+        plaat = gv.pauseplaat;
     end
 else
     plaat = read(gv.vidObj,gv.mfr(gv.curfix));
