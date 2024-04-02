@@ -580,6 +580,7 @@ if ~skipdataload
     gv = get(hm,'userdata');
     switch gv.datatype
         case 'SMI Glasses'
+            gv.multfilm = []; % no multiple segments supported
             cd(gv.foldnaam);
             disp('Select data file with gaze positions');
             [filenaam, filepad] = uigetfile('.txt','Select data file with gaze positions');
@@ -603,9 +604,18 @@ if ~skipdataload
             gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
             
             disp('Determining fixations...');
-            % gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
-            gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+%             % gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
+%             gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            whichclass = questdlg('Which slow phase classifier do you want to use?','Pick event classifier','Hooge & Camps (2013)','Hessels et al. (2020)','Hooge & Camps (2013)');
+            if strcmp(whichclass,'Hooge & Camps (2013)')
+                disp('Using Hooge & Camps (2013)');
+                gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
+            else
+                disp('Using Hessels et al. (2020)');
+                gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            end
         case 'Positive Science'
+            gv.multfilm = []; % no multiple segments supported
             cd(gv.foldnaam);
             disp('Select data file with gaze positions');
             [filenaam, filepad] = uigetfile('.txt','Select data file with gaze positions');
@@ -627,8 +637,16 @@ if ~skipdataload
             % of it.
             
             disp('Determining fixations...');
-            gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            whichclass = questdlg('Which slow phase classifier do you want to use?','Pick event classifier','Hooge & Camps (2013)','Hessels et al. (2020)','Hooge & Camps (2013)');
+            if strcmp(whichclass,'Hooge & Camps (2013)')
+                disp('Using Hooge & Camps (2013)');
+                gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
+            else
+                disp('Using Hessels et al. (2020)');
+                gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            end
         case 'Pupil Labs (first gen + Core)'
+            gv.multfilm = []; % no multiple segments supported
             cd(gv.foldnaam);
             disp('Select data file with gaze positions');
             [filenaam, filepad] = uigetfile('.csv','Select data file with gaze positions');
@@ -670,7 +688,14 @@ if ~skipdataload
             % of it.
             
             disp('Determining fixations...');
-            gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            whichclass = questdlg('Which slow phase classifier do you want to use?','Pick event classifier','Hooge & Camps (2013)','Hessels et al. (2020)','Hooge & Camps (2013)');
+            if strcmp(whichclass,'Hooge & Camps (2013)')
+                disp('Using Hooge & Camps (2013)');
+                gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
+            else
+                disp('Using Hessels et al. (2020)');
+                gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            end
 
         case {'Tobii Pro Glasses 2','Tobii Pro Glasses 3'}
             
@@ -760,6 +785,7 @@ if ~skipdataload
 %             gv.datx = gv.datx * data.video.scene.width;
 %             gv.daty = gv.daty * data.video.scene.height;
         case 'Pupil Labs invisible (200 Hz)'
+            gv.multfilm = []; % no multiple segments supported yet
             disp('Selecting data file with gaze positions...');
             [gv.datt, gv.datx, gv.daty] = leesgazePupInvis200Exdata(fullfile(gv.foldnaam,'gaze_positions.csv'));
 
@@ -807,8 +833,16 @@ if ~skipdataload
             % of it.
             
             disp('Determining fixations...');
-            gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            whichclass = questdlg('Which slow phase classifier do you want to use?','Pick event classifier','Hooge & Camps (2013)','Hessels et al. (2020)','Hooge & Camps (2013)');
+            if strcmp(whichclass,'Hooge & Camps (2013)')
+                disp('Using Hooge & Camps (2013)');
+                gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
+            else
+                disp('Using Hessels et al. (2020)');
+                gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            end
         case 'Pupil Labs Neon (200 Hz)'
+            gv.multfilm = []; % no multiple segments supported yet
             disp('Selecting data file with gaze positions...');
             [gv.datt, gv.datx, gv.daty] = leesgazePupNeon200data(fullfile(gv.foldnaam,'gaze.csv'));
             
@@ -868,7 +902,14 @@ if ~skipdataload
             % of it.
             
             disp('Determining fixations...');
-            gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            whichclass = questdlg('Which slow phase classifier do you want to use?','Pick event classifier','Hooge & Camps (2013)','Hessels et al. (2020)','Hooge & Camps (2013)');
+            if strcmp(whichclass,'Hooge & Camps (2013)')
+                disp('Using Hooge & Camps (2013)');
+                gv.fmark = fixdetect(gv.datx,gv.daty,gv.datt,gv);
+            else
+                disp('Using Hessels et al. (2020)');
+                gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
+            end
         otherwise
             disp('Unknown data type, crashing in 3,2,1,...');
     end
@@ -934,7 +975,7 @@ if ~skipdataload
     gv.bfr(gv.bfr<1) = 1;
     gv.efr(gv.efr<1) = 1;
 
-    if ~isempty(gv.multfilm)
+    if ~isempty(gv.multfilm) % for Tobii Glasses only
         % now assuming just one pause...
         gv.whichfilm = zeros(size(gv.bfr));
         gv.whichfilm(1:find(gv.efr<=data.video.scene.segframes(1) & gv.efr-gv.bfr>0,1,'last')) = 1;
