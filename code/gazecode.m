@@ -979,11 +979,10 @@ if ~skipdataload
         % now assuming just one pause...
         gv.whichfilm = zeros(size(gv.bfr));
         gv.whichfilm(1:find(gv.efr<=data.video.scene.segframes(1) & gv.efr-gv.bfr>0,1,'last')) = 1;
-        gv.whichfilm(find(gv.bfr>=data.video.scene.segframes(2) & gv.efr-gv.bfr>0,1,'first'):end) = 2;
-
+        gv.whichfilm(find(gv.bfr>=data.video.scene.segframes(1) & gv.efr-gv.bfr>0,1,'first'):end) = 2;
         
-        gv.bfr(gv.whichfilm ==2) = gv.bfr(gv.whichfilm == 2)  - data.video.scene.segframes(2);
-        gv.efr(gv.whichfilm ==2) = gv.efr(gv.whichfilm == 2)  - data.video.scene.segframes(2);
+        gv.bfr(gv.whichfilm ==2) = gv.bfr(gv.whichfilm == 2)  - data.video.scene.segframes(1);
+        gv.efr(gv.whichfilm ==2) = gv.efr(gv.whichfilm == 2)  - data.video.scene.segframes(1);
         
     else
         gv.bfr(gv.bfr>gv.maxframe) = gv.maxframe;
@@ -1091,6 +1090,7 @@ if ~isempty(gv.multfilm)
     if gv.whichfilm(gv.curfix) == 1
         try
             plaat = read(gv.vidObj,gv.mfr(gv.curfix));
+            segmstr =', Segment 1';
         catch
             warning('Could not find video frame, perhaps paused, showing nothing');
             plaat = read(gv.vidObj,1);
@@ -1099,6 +1099,7 @@ if ~isempty(gv.multfilm)
     elseif gv.whichfilm(gv.curfix) == 2
         try
             plaat = read(gv.vidObj2,gv.mfr(gv.curfix));
+            segmstr =', Segment 2';
         catch
             warning('Could not find video frame, perhaps paused, showing nothing');
             plaat = read(gv.vidObj,1);
@@ -1110,6 +1111,7 @@ if ~isempty(gv.multfilm)
     end
 else
     plaat = read(gv.vidObj,gv.mfr(gv.curfix));
+    segmstr = '';
 end
 imagesc(plaat);
 gv.frameas = gca;
@@ -1122,9 +1124,9 @@ gv.curfixtijdm = floor(temptijd/(1000*60));
 gv.curfixtijds = floor((temptijd-gv.curfixtijdm*1000*60)/1000);
 gv.curfixtijdstr = [pad(num2str(gv.curfixtijdm),2,'left','0'),':',pad(num2str(gv.curfixtijds),2,'left','0')];
 
-disp(['Current event: ', num2str(gv.curfix),'/',num2str(gv.maxfix), ', Time: ', gv.curfixtijdstr, ', End time: ',gv.maxtijdstr]);
+disp(['Current event: ', num2str(gv.curfix),'/',num2str(gv.maxfix), ', Time: ', gv.curfixtijdstr, ', End time: ',gv.maxtijdstr,segmstr]);
 
-set(gv.lp,'Title',['Current event: ', num2str(gv.curfix),'/',num2str(gv.maxfix), ', Time: ', gv.curfixtijdstr, ', End time: ',gv.maxtijdstr]);
+set(gv.lp,'Title',['Current event: ', num2str(gv.curfix),'/',num2str(gv.maxfix), ', Time: ', gv.curfixtijdstr, ', End time: ',gv.maxtijdstr,segmstr]);
 hold(gv.frameas,'on');
 stip = scatter(gv.fixxpos(gv.curfix),gv.fixypos(gv.curfix),1000,'ro');
 set(stip,'MarkerEdgeColor',[0 0.85 1],'MarkerFaceAlpha',.65,'MarkerFaceColor',[0 0.85 1],'LineWidth',2);
