@@ -211,6 +211,7 @@ switch gv.datatype
         filmnaam    = fullfile(gv.foldnaam,'segments','1','fullstream.mp4');
         gv.filmnaam = filmnaam;
         if length(folderfromfolder(fullfile(gv.foldnaam,'segments'))) > 1
+            disp('found multiple segments');
             gv.filmnaam = {};
             disp('multiple segments');
             subfoldernames = folderfromfolder(fullfile(gv.foldnaam,'segments'));
@@ -220,6 +221,8 @@ switch gv.datatype
                 gv.filmnaam{ft} = filmnaam;
             end
             gv.multfilm = 1;
+        else
+            gv.multfilm =[];
         end
         
         fid = fopen(fullfile(gv.foldnaam,'recording.json'),'rt');
