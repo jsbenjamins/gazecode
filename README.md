@@ -27,11 +27,11 @@
        like using the command line/terminal, consider using a graphical git tool such as
        SmartGit, which is available free for non-commercial use
       1. Download GazeCode and GlassesViewer in one go using the following command:
-      `git clone --recurse-submodules -j8 git://github.com/jsbenjamins/gazecode.git`
+      `git clone --recurse-submodules -j8 https://github.com/jsbenjamins/gazecode.git`
       1. Should this not work due to your git version being too old, try executing the
        following commands:
        ```
-       git clone git://github.com/jsbenjamins/gazecode.git
+       git clone https://github.com/jsbenjamins/gazecode.git
        cd gazecode
        git submodule update --init --recursive
        ```
