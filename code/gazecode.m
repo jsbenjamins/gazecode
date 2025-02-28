@@ -237,6 +237,9 @@ switch gv.datatype
         % do the selecor thing
         % UI interface fix. On Mac/Unix title of dialog boxes is not displayed,
         % thus added an extra info pop-up with instruction;
+        % gv.multfilm is only needed/implemented for TG2, but further down 
+        % cases are TG@ and TG3, so set it to empty here
+        gv.multfilm =[]; 
         if ~ ispc; uiwait(msgbox('Select the ROOT directory of your SD card','Info','modal')); end
         disp('Select ROOT directory of SD card');
         selectedDir = uigetdir(gv.datadir,'Select ROOT directory of SD card');
