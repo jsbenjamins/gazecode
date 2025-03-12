@@ -958,10 +958,18 @@ if ~skipdataload
             % use frame time info from GlassesViewer's export
             [gv.bfr,gv.efr] = deal(nan(size(fixB)));
             for p=1:length(fixB)
-                if fixB(p) < 0
+                if (fixB(p)/1000) < min(data.video.scene.fts)
+                    disp(['Time stamp of ' num2str(p), ' out of ',num2str(length(fixB)),' events, beginning at ',num2str(fixB(p)/1000),', lies before first possible time stamp scene video: ',num2str(min(data.video.scene.fts))]);
+                    disp(['Setting event ', num2str(p), ' to first frame of scene video'])
                     gv.bfr(p) = 1;
                 else
-                    gv.bfr(p) = find(data.video.scene.fts<=fixB(p)/1000,1,'last');
+                    try
+                        gv.bfr(p) = find(data.video.scene.fts<=fixB(p)/1000,1,'last');
+                    catch
+                        disp(['Last possible time stamp scene video ' , num2str(max(data.video.scene.fts))]);
+                        disp(['Event ' num2str(p), ' out of ',num2str(length(fixB)), ' has time stamp: ',num2str(fixB(p)/1000)]);
+                        gv.bfr(p) = find(data.video.scene.fts<=fixB(p)/1000,1,'last');
+                    end
                 end
                 gv.efr(p) = find(data.video.scene.fts<=fixE(p)/1000,1,'last');       
             end
