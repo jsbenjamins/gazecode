@@ -42,7 +42,7 @@ switch eyetracker
         f.sf            = 200;      % sampling freq
         f.windowsize    = round(f.windowlength./(1000/f.sf));
         disp('using Pupil invisible 200 hz settings');
-    case 'Pupil Labs Neon (200 Hz)'
+    case {'Pupil Labs Neon (cloud export 200 Hz)','Pupil Labs Neon (Neon Player (v6.0.07b and up) export 200 Hz)'}
         f.thr           = 5000;     % set very high
         f.counter       = 200;
         f.minfix        = 60;       % ms

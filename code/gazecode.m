@@ -1,6 +1,6 @@
 function gazecode(settings)
 
-% GazeCode (GlassesViewer integrated + Pupil Labs Invisible supported version)
+% GazeCode (GlassesViewer integrated + Pupil Labs supported version)
 % 
 % See readme.md for usage details
 % 
@@ -31,8 +31,8 @@ function gazecode(settings)
 % license, and some may be under other licenses.
 % 
 % Tested on:
-% Matlab 2021b on Mac OSX 12.2.1
-% Matlab 2022bx, on Windows 11
+% Matlab 2024a on Mac OSX 14.8.4
+% Matlab 2022b, on Windows 11
 
 %% start fresh
 clear all; close all; clc;
@@ -135,8 +135,8 @@ close(gv.splashh);
 
 % this is now a question dialog, but needs to be changed to a dropdown for
 % more options. Question dialog allows for only three options
-models = {'Tobii Pro Glasses 2','Tobii Pro Glasses 3','Pupil Labs invisible (200 Hz)','Pupil Labs Neon (200 Hz)','Pupil Labs (first gen + Core)','SMI Glasses','Positive Science'};
-modelIdx = listdlg ('ListString', models,'SelectionMode', 'Single', 'PromptString', 'Select eye-tracker', 'Initialvalue', 1,'Cancelstring','Quit','ListSize',[160 160]);
+models = {'Tobii Pro Glasses 2','Tobii Pro Glasses 3','Pupil Labs invisible (200 Hz)','Pupil Labs Neon (cloud export 200 Hz)','Pupil Labs Neon (Neon Player (v6.0.07b and up) export 200 Hz)','Pupil Labs (first gen + Core)','SMI Glasses','Positive Science'};
+modelIdx = listdlg ('ListString', models,'SelectionMode', 'Single', 'PromptString', 'Select eye-tracker', 'Initialvalue', 1,'Cancelstring','Quit','ListSize',[360 160]);
 assert(~isempty(modelIdx),'You did not select a type of mobile eye-tracking data, exiting');
 
 gv.datatype = models{modelIdx};
@@ -162,7 +162,7 @@ switch gv.datatype
     case 'Pupil Labs invisible (200 Hz)'
         gv.wcr = [1088 1080];
         gv.ecr = [1088 1080];
-    case 'Pupil Labs Neon (200 Hz)'
+    case {'Pupil Labs Neon (cloud export 200 Hz)','Pupil Labs Neon (Neon Player (v6.0.07b and up) export 200 Hz)'}
         gv.wcr = [1600 1200];
         gv.ecr = [192 192];
 end
@@ -312,7 +312,7 @@ switch gv.datatype
         else
             % do nothing
         end
-    case 'Pupil Labs Neon (200 Hz)'
+    case {'Pupil Labs Neon (cloud export 200 Hz)','Pupil Labs Neon (Neon Player (v6.0.07b and up) export 200 Hz)'}
        if ~ ispc; uiwait(msgbox('Select data directory to code','Info','modal')); end
         disp('Select data directory to code');
         gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
@@ -820,7 +820,7 @@ if ~skipdataload
             
             [gv.datx, gv.datt2] = resample(gv.datx,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
             [gv.daty, gv.datt2] = resample(gv.daty,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
-
+            % this is the resample function from Signal processing Toolbox!
            
             gv.datt = gv.datt2*1000.0; % mulitply with 1000 to go back to ms
             
@@ -847,15 +847,15 @@ if ~skipdataload
                 disp('Using Hessels et al. (2020)');
                 gv.fmark = fixdetectmovingwindow(gv.datx,gv.daty,gv.datt,gv);
             end
-        case 'Pupil Labs Neon (200 Hz)'
+        case {'Pupil Labs Neon (cloud export 200 Hz)','Pupil Labs Neon (Neon Player (v6.0.07b and up) export 200 Hz)'}
             gv.multfilm = []; % no multiple segments supported yet
             disp('Selecting data file with gaze positions...');
-            [gv.datt, gv.datx, gv.daty] = leesgazePupNeon200data(fullfile(gv.foldnaam,'gaze.csv'));
+            [gv.datt, gv.datx, gv.daty] = leesgazePupNeon200data(fullfile(gv.foldnaam,'gaze.csv'),gv.datatype);
             
             % from nano to s
             gv.datt = gv.datt/1000000000;
             disp('Selecting data file with timestamps of world video');
-            [gv.datwt] = leesTSPupNeon200(fullfile(gv.foldnaam,'world_timestamps.csv'));
+            [gv.datwt] = leesTSPupNeon200(fullfile(gv.foldnaam,'world_timestamps.csv'),gv.datatype);
             % convert to s
             gv.datwt = gv.datwt/1000000000;
             gv.worldgazeTdiff = gv.datt(1) - gv.datwt(1);
