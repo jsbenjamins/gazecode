@@ -19,6 +19,8 @@
   We know our software works with:
   - Matlab 2021B on Mac OS 12.2.1 Monterey
   - Matlab 2022b on Windows 11
+
+  Note that for Pupil labs wearable eye-tracker we use the 'resample' function of the Signal Processing Toolbox.
   
   (other combinations will probably work as well, but have not been tested).
   
