@@ -4,8 +4,8 @@
   mobile eye-tracking data. Currently Pupil Labs, Pupil Labs Invisible, Pupil Labs Neon, SMI, Positive Science and Tobii Pro Glasses 2 & 3 data 
   are supported. The software loads an exported visualisation (video file) 
   and the data of a mobile eye-tracking measurement, runs a fixation
-  detection algorithm (adaptation of Hooge and Camps, 2013, Frontiers in Psychology, 4,
-  996) and offers a simple to use interface to browse through and
+  detection algorithm (either an adaptation of Hooge and Camps, 2013, Frontiers in Psychology, 4,
+  996 or Hessels et al., 2020, Attention, Perception & Psychophysics, 82, 2482) and offers a simple to use interface to browse through and
   categorise the detected fixations. This version is integrated with
   [GlassesViewer](https://github.com/dcnieho/GlassesViewer) to
   enable directly opening Tobii Pro Glasses 2 and 3 recordings as stored on the recording
@@ -17,7 +17,7 @@
   Before you download anything, GazeCode and GlassesViewer run in Matlab. Make sure Matlab is installed.
   
   We know our software works with:
-  - Matlab 2021B on Mac OS 12.2.1 Monterey
+  - Matlab 2021B on Mac OS 12.2.1 Monterey, and 2024A on Mac OS 14.8.4 Sonoma
   - Matlab 2022b on Windows 11
 
   Note that for Pupil labs wearable eye-tracker we use the 'resample' function of the Signal Processing Toolbox.
