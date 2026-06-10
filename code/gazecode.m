@@ -282,7 +282,7 @@ switch gv.datatype
 
     case 'Pupil Labs invisible (200 Hz)'
        if ~ ispc; uiwait(msgbox('Select data directory to code','Info','modal')); end
-        disp('Select data directory to code');
+        fprintf('Select data directory to code, \nit should contain gaze.csv or gaze_positions.csv and the world camera video');
         gv.foldnaam    = uigetdir(gv.datadir,'Select data directory to code');
         % adding disp as Mac does not show title of UI elements
 %         clc;
@@ -293,7 +293,7 @@ switch gv.datatype
         
         gv.resdir = [gv.resdir gv.fs gv.filmnaam];
 
-        gv.foldnaam = fullfile(gv.foldnaam, 'exports','000');
+        % gv.foldnaam = fullfile(gv.foldnaam, 'exports','000');
 
              
         if exist([gv.resdir gv.fs gv.filmnaam '.mat']) > 0
@@ -793,43 +793,96 @@ if ~skipdataload
         case 'Pupil Labs invisible (200 Hz)'
             gv.multfilm = []; % no multiple segments supported yet
             disp('Selecting data file with gaze positions...');
-            [gv.datt, gv.datx, gv.daty] = leesgazePupInvis200Exdata(fullfile(gv.foldnaam,'gaze_positions.csv'));
-
-            disp('Selecting data file with timestamps of world video');
-            [gv.datwt] = leesTSPupInvis200Ex(fullfile(gv.foldnaam,'world_timestamps.csv'));
-            % convert to ms
-            gv.datwt = gv.datwt*1000;
-            % recalculate absolute timestamps to time from onset (0 ms)
-            gv.datt = double(gv.datt);
-            gv.datt2 = gv.datt;
-            gv.datt2(1) = 0;
-            for p = 2:length(gv.datt)
-                gv.datt2(p) = gv.datt(p) - gv.datt(p-1);
-                gv.datt2(p) = gv.datt2(p) + gv.datt2(p-1);
+            % default new export from Cloud
+            gazebestand = fullfile(gv.foldnaam,'gaze.csv');
+            gv.oldexporttype = false;
+            % fallback for old export type from Pupil plyaer
+            if ~exist(gazebestand)
+                gazebestand = fullfile(gv.foldnaam,'gaze_positions.csv');
+                gv.oldexporttype = true;
             end
             
-            % convert to ms
-            gv.datt2 = gv.datt2*1000;
-            gv.datt = gv.datt2;
-            
-            gv.datx(gv.datx > 1) = NaN;
-            gv.datx(gv.datx < 0) = NaN;
-            
-            gv.daty(gv.daty > 1) = NaN;
-            gv.daty(gv.daty < 0) = NaN;
-            
-            [gv.datx, gv.datt2] = resample(gv.datx,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
-            [gv.daty, gv.datt2] = resample(gv.daty,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
-            % this is the resample function from Signal processing Toolbox!
-           
-            gv.datt = gv.datt2*1000.0; % mulitply with 1000 to go back to ms
-            
-            gv.datx = gv.datx * gv.wcr(1);
-            % flip vertical normilzed coordinates to match with video coordinates
-            gv.daty = gv.wcr(2) - gv.daty * gv.wcr(2);
+            try
+                [gv.datt, gv.datx, gv.daty] = leesgazePupInvis200Exdata(gazebestand,gv.oldexporttype);
+            catch
+                disp('Could not find gaze.csv or gaze_positions.csv');
+            end
+
+            disp('Selecting data file with timestamps of world video');
+
+            if gv.oldexporttype
+                [gv.datwt] = leesTSPupInvis200Ex(fullfile(gv.foldnaam,'world_timestamps.csv'),gv.oldexporttype);
+                % convert to ms
+                gv.datwt = gv.datwt*1000;
+                % recalculate absolute timestamps to time from onset (0 ms)
+                gv.datt = double(gv.datt);
+                gv.datt2 = gv.datt;
+                gv.datt2(1) = 0;
+                for p = 2:length(gv.datt)
+                    gv.datt2(p) = gv.datt(p) - gv.datt(p-1);
+                    gv.datt2(p) = gv.datt2(p) + gv.datt2(p-1);
+                end
+
+                % convert to ms
+                gv.datt2 = gv.datt2*1000;
+                gv.datt = gv.datt2;
+
+                gv.datx(gv.datx > 1) = NaN;
+                gv.datx(gv.datx < 0) = NaN;
+
+                gv.daty(gv.daty > 1) = NaN;
+                gv.daty(gv.daty < 0) = NaN;
+
+                [gv.datx, gv.datt2] = resample(gv.datx,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
+                [gv.daty, gv.datt2] = resample(gv.daty,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
+                % this is the resample function from Signal processing Toolbox!
+
+                gv.datt = gv.datt2*1000.0; % multiply with 1000 to go back to ms
+
+                gv.datx = gv.datx * gv.wcr(1);
+                % flip vertical normilzed coordinates to match with video coordinates
+                gv.daty = gv.wcr(2) - gv.daty * gv.wcr(2);
+            else
+                % from nano to s
+                gv.datt = gv.datt/1000000000;
+                disp('Selecting data file with timestamps of world video');
+                [gv.datwt] = leesTSPupInvis200Ex(fullfile(gv.foldnaam,'world_timestamps.csv'),gv.oldexporttype);
+                % convert to s
+                gv.datwt = gv.datwt/1000000000;
+                gv.worldgazeTdiff = gv.datt(1) - gv.datwt(1);
+
+                % recalculate absolute timestamps to time from onset (0 ms)
+                gv.datt = double(gv.datt);
+                gv.datt2 = gv.datt;
+                gv.datt2(1) = 0;
+                for p = 2:length(gv.datt)
+                    gv.datt2(p) = gv.datt(p) - gv.datt(p-1);
+                    gv.datt2(p) = gv.datt2(p) + gv.datt2(p-1);
+                end
+
+                % if world timestamps start earlier, set first gaze time stamps
+                % to difference between first world time stamps and first gaze
+                % timestamp as movie gaze is projected onto movie
+                gv.datt2 = gv.datt2 + gv.worldgazeTdiff;
+
+                % convert to ms
+                gv.datt2 = gv.datt2*1000;
+                gv.datt = gv.datt2;
+
+                gv.datx(gv.datx > gv.wcr(1)) = NaN;
+                gv.datx(gv.datx < 0) = NaN;
+
+                gv.daty(gv.daty > gv.wcr(2)) = NaN;
+                gv.daty(gv.daty < 0) = NaN;
+
+                [gv.datx, gv.datt2] = resample(gv.datx,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
+                [gv.daty, gv.datt2] = resample(gv.daty,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
+
+                gv.datt = gv.datt2*1000.0; % mulitply with 1000 to go back to ms
+            end
             % determine start and end times of each fixation in one vector (odd
             % number start times of fixations even number stop times)
-            
+
             % The line below determines fixations start and stop times since the
             % beginning of the recording. For this detection of fixations the algo-
             % rithm of Hessels et (2019 submitted) is used, but this can be replaced
@@ -837,7 +890,7 @@ if ~skipdataload
             % Important is that this algorithm returns a vector that has fixation
             % start times at the odd and fixation end times at the even positions
             % of it.
-            
+
             disp('Determining fixations...');
             whichclass = questdlg('Which slow phase classifier do you want to use?','Pick event classifier','Hooge & Camps (2013)','Hessels et al. (2020)','Hooge & Camps (2013)');
             if strcmp(whichclass,'Hooge & Camps (2013)')
@@ -859,11 +912,7 @@ if ~skipdataload
             % convert to s
             gv.datwt = gv.datwt/1000000000;
             gv.worldgazeTdiff = gv.datt(1) - gv.datwt(1);
-%             gv.datwt(1) = 0
-%             for p = 2:length(gv.datwt)
-%                 gv.datwt(p) = gv.datwt(p) - gv.datt(p-1);
-%                 gv.datt2(p) = gv.datt2(p) + gv.datt2(p-1);
-%             end
+
             % recalculate absolute timestamps to time from onset (0 ms)
             gv.datt = double(gv.datt);
             gv.datt2 = gv.datt;
@@ -882,10 +931,10 @@ if ~skipdataload
             gv.datt2 = gv.datt2*1000;
             gv.datt = gv.datt2;
             
-            gv.datx(gv.datx > 1600) = NaN;
+            gv.datx(gv.datx > gv.wcr(1)) = NaN;
             gv.datx(gv.datx < 0) = NaN;
             
-            gv.daty(gv.daty > 1200) = NaN;
+            gv.daty(gv.daty > gv.wcr(2)) = NaN;
             gv.daty(gv.daty < 0) = NaN;
             
             [gv.datx, gv.datt2] = resample(gv.datx,gv.datt/1000.0,resampleFreq); % divide by 1000 to convert to seconds
